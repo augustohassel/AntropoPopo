@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="url(#grad)" />
+  <!-- Somatocarta estilizada (triángulo de Reuleaux) -->
+  <path d="M32 12 A26 26 0 0 1 47 38 A26 26 0 0 1 17 38 A26 26 0 0 1 32 12 Z" stroke="#F0FDFA" stroke-width="2.5" fill="none" opacity="0.9" />
+  <path d="M32 30 L32 12 M32 30 L47 38 M32 30 L17 38" stroke="#F0FDFA" stroke-width="1.5" opacity="0.45" />
+  <circle cx="35" cy="24" r="4.5" fill="#FDE68A" />
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#019E8F" />
+      <stop offset="1" stop-color="#4F46E5" />
+    </linearGradient>
+  </defs>
+</svg>

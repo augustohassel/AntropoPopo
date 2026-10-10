@@ -1,0 +1,224 @@
+import Dexie, { Table } from 'dexie';
+import { BackupData, Measurement, Patient, ProfessionalProfile } from '../types';
+import { INITIAL_MEASUREMENTS, INITIAL_PATIENTS, INITIAL_PROFESSIONAL } from './seeds';
+
+export interface SettingEntry {
+  key: string;
+  value: any;
+}
+
+export class AntropoPopoDatabase extends Dexie {
+  patients!: Table<Patient, string>;
+  measurements!: Table<Measurement, string>;
+  settings!: Table<SettingEntry, string>;
+
+  constructor() {
+    super('AntropoPopoDB');
+    this.version(1).stores({
+      patients: 'id, name, createdAt',
+      measurements: 'id, patientId, date, createdAt',
+      settings: 'key',
+    });
+  }
+}
+
+export const db = new AntropoPopoDatabase();
+
+export const INITIALIZED_KEY = 'antropopopo_has_initialized_v1';
+export const PROFESSIONAL_KEY = 'professional_profile';
+export const APP_MODE_KEY = 'app_mode';
+
+/**
+ * Solicita almacenamiento persistente al navegador para prevenir desalojo
+ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+    return await navigator.storage.persist();
+  }
+  return false;
+}
+
+/**
+ * Inicializa la base de datos con datos de muestra si es la primera vez
+ */
+export async function initializeDatabase(): Promise<void> {
+  // Pedir almacenamiento persistente de forma no bloqueante
+  requestPersistentStorage().catch(() => {});
+
+  const hasInitialized = typeof window !== 'undefined' && localStorage.getItem(INITIALIZED_KEY);
+  if (hasInitialized) {
+    return;
+  }
+
+  const patientCount = await db.patients.count();
+  if (patientCount === 0) {
+    await db.patients.bulkAdd(INITIAL_PATIENTS);
+    await db.measurements.bulkAdd(INITIAL_MEASUREMENTS);
+    await db.settings.put({
+      key: PROFESSIONAL_KEY,
+      value: INITIAL_PROFESSIONAL,
+    });
+  }
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(INITIALIZED_KEY, 'true');
+  }
+}
+
+/**
+ * Obtiene el perfil del profesional
+ */
+export async function getProfessionalProfile(): Promise<ProfessionalProfile> {
+  const row = await db.settings.get(PROFESSIONAL_KEY);
+  return (row?.value as ProfessionalProfile) ?? INITIAL_PROFESSIONAL;
+}
+
+/**
+ * Guarda el perfil del profesional
+ */
+export async function saveProfessionalProfile(profile: ProfessionalProfile): Promise<void> {
+  await db.settings.put({
+    key: PROFESSIONAL_KEY,
+    value: profile,
+  });
+}
+
+/**
+ * Exporta todos los datos a JSON
+ */
+export async function exportBackup(): Promise<string> {
+  const patients = await db.patients.toArray();
+  const measurements = await db.measurements.toArray();
+  const professional = await getProfessionalProfile();
+
+  const backup: BackupData = {
+    app: 'AntropoPopo',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    professional,
+    patients,
+    measurements,
+  };
+
+  return JSON.stringify(backup, null, 2);
+}
+
+/**
+ * Exporta el historial de mediciones a CSV compatible con Excel
+ */
+export async function exportMeasurementsCSV(): Promise<string> {
+  const patients = await db.patients.toArray();
+  const measurements = await db.measurements.toArray();
+
+  const patientMap = new Map(patients.map((p) => [p.id, p]));
+
+  const headers = [
+    'Paciente',
+    'Sexo',
+    'Fecha de Nacimiento',
+    'Fecha de Medición',
+    'Peso (kg)',
+    'Talla (cm)',
+    'Humeral (cm)',
+    'Femoral (cm)',
+    'Brazo Relajado (cm)',
+    'Brazo Flexionado (cm)',
+    'Cintura (cm)',
+    'Cadera (cm)',
+    'Pantorrilla (cm)',
+    'Tríceps (mm)',
+    'Subescapular (mm)',
+    'Bíceps (mm)',
+    'Cresta Ilíaca (mm)',
+    'Supraespinal (mm)',
+    'Abdominal (mm)',
+    'Muslo Medial (mm)',
+    'Pantorrilla (mm)',
+    'Notas',
+  ];
+
+  const rows = measurements.map((m) => {
+    const p = patientMap.get(m.patientId);
+    const f = m.finals;
+    return [
+      `"${p?.name || ''}"`,
+      p?.sex || '',
+      p?.birthDate || '',
+      m.date || '',
+      f.weight ?? '',
+      f.height ?? '',
+      f.humerus ?? '',
+      f.femur ?? '',
+      f.armRelaxed ?? '',
+      f.armFlexed ?? '',
+      f.waist ?? '',
+      f.hip ?? '',
+      f.calfGirth ?? '',
+      f.triceps ?? '',
+      f.subscapular ?? '',
+      f.biceps ?? '',
+      f.iliacCrest ?? '',
+      f.supraspinale ?? '',
+      f.abdominal ?? '',
+      f.thigh ?? '',
+      f.calf ?? '',
+      `"${(m.notes || '').replace(/"/g, '""')}"`,
+    ].join(',');
+  });
+
+  return [headers.join(','), ...rows].join('\n');
+}
+
+/**
+ * Importa un backup JSON
+ */
+export async function importBackup(jsonString: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const data: BackupData = JSON.parse(jsonString);
+    if (!data.patients || !data.measurements) {
+      throw new Error('Formato de backup inválido.');
+    }
+
+    await db.transaction('rw', db.patients, db.measurements, db.settings, async () => {
+      await db.patients.clear();
+      await db.measurements.clear();
+      await db.patients.bulkAdd(data.patients);
+      await db.measurements.bulkAdd(data.measurements);
+      if (data.professional) {
+        await db.settings.put({
+          key: PROFESSIONAL_KEY,
+          value: data.professional,
+        });
+      }
+    });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(INITIALIZED_KEY, 'true');
+    }
+
+    return {
+      success: true,
+      message: `Se importaron ${data.patients.length} pacientes y ${data.measurements.length} mediciones.`,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'Error al procesar el archivo.',
+    };
+  }
+}
+
+/**
+ * Restablece la base de datos a los datos de muestra iniciales
+ */
+export async function resetDatabase(): Promise<void> {
+  await db.transaction('rw', db.patients, db.measurements, db.settings, async () => {
+    await db.patients.clear();
+    await db.measurements.clear();
+    await db.settings.clear();
+  });
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(INITIALIZED_KEY);
+  }
+  await initializeDatabase();
+}
