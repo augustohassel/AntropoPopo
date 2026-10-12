@@ -4,7 +4,12 @@
     "dockerfile": "Dockerfile"
   },
   "workspaceFolder": "/workspaces/AntropoPopo",
-  "forwardPorts": [5173],
+  "mounts": [
+    "source=${localEnv:USERPROFILE}/Documents/Personal/AgentToolkit/plugins,target=/root/.gemini/config/plugins,type=bind,consistency=cached"
+  ],
+  "forwardPorts": [
+    5173
+  ],
   "portsAttributes": {
     "5173": {
       "label": "AntropoPopo Vite Dev Server",
