@@ -1,21 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import {
   calculateFinalValue,
+  calculateRelativeDiffPct,
   computeResults,
+  getVariablesNeedingThirdTake,
   needsThirdTake,
   siriEquation,
 } from './calculator';
-import { Finals } from '../types';
+import { Finals, Takes } from '../types';
+import { VARIABLES } from '../domain/variables';
 
 describe('Calculadora Antropométrica AntropoPopo', () => {
   it('calcula la tolerancia ISAK y decide si requiere 3ra toma', () => {
     // Pliegue tolerancia 5%
-    expect(needsThirdTake([5.0, 5.2], 0.05)).toBe(false); // diff 3.9%
-    expect(needsThirdTake([5.0, 5.5], 0.05)).toBe(true);  // diff 9.5%
+    expect(needsThirdTake([5.0, 5.2], 0.05)).toBe(false); // diff 3.92%
+    expect(needsThirdTake([5.0, 5.5], 0.05)).toBe(true);  // diff 9.52%
 
     // Perímetro tolerancia 1%
     expect(needsThirdTake([35.5, 35.6], 0.01)).toBe(false); // diff 0.28%
     expect(needsThirdTake([35.0, 35.5], 0.01)).toBe(true);  // diff 1.42%
+
+    // Porcentaje de diferencia relativa
+    expect(calculateRelativeDiffPct([5.0])).toBeUndefined();
+    expect(calculateRelativeDiffPct([5.0, 5.2])).toBe(3.92);
+    expect(calculateRelativeDiffPct([5.0, 5.5])).toBe(9.52);
+  });
+
+  it('filtra correctamente las variables que requieren 3ra pasada ISAK', () => {
+    const takes: Takes = {
+      weight: [82.0], // Solo 1 toma -> no requiere 3ra
+      height: [182.0, 182.2], // 0.11% <= 1% -> dentro de tolerancia
+      waist: [80.0, 81.5], // 1.86% > 1% -> requiere 3ra pasada
+      triceps: [10.0, 10.4], // 3.92% <= 5% -> dentro de tolerancia
+      subscapular: [12.0, 13.0], // 8.0% > 5% -> requiere 3ra pasada
+    };
+
+    const thirdPassVars = getVariablesNeedingThirdTake(takes, VARIABLES);
+    expect(thirdPassVars.map((v) => v.key)).toEqual(['waist', 'subscapular']);
   });
 
   it('calcula el valor final ISAK (media de 2 o mediana de 3)', () => {

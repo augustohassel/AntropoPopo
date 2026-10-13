@@ -6,19 +6,66 @@ import {
   Sex,
   Somatotype,
   Takes,
+  VariableDef,
   VariableKey,
 } from '../types';
 
 /**
+ * Calcula el porcentaje de diferencia relativa (Δ%) entre las dos primeras tomas
+ */
+export function calculateRelativeDiffPct(
+  takes: (number | undefined)[] = []
+): number | undefined {
+  if (takes.length < 2) return undefined;
+  const [t1, t2] = takes;
+  if (
+    typeof t1 !== 'number' ||
+    typeof t2 !== 'number' ||
+    isNaN(t1) ||
+    isNaN(t2) ||
+    t1 <= 0 ||
+    t2 <= 0
+  ) {
+    return undefined;
+  }
+  const diff = Math.abs(t1 - t2);
+  const mean = (t1 + t2) / 2;
+  return round((diff / mean) * 100, 2);
+}
+
+/**
  * Determina si dos tomas exceden la tolerancia ISAK y requieren una tercera
  */
-export function needsThirdTake(takes: number[] = [], tolerance: number = 0.05): boolean {
+export function needsThirdTake(
+  takes: (number | undefined)[] = [],
+  tolerance: number = 0.05
+): boolean {
   if (takes.length < 2) return false;
   const [t1, t2] = takes;
-  if (t1 <= 0 || t2 <= 0) return false;
+  if (
+    typeof t1 !== 'number' ||
+    typeof t2 !== 'number' ||
+    isNaN(t1) ||
+    isNaN(t2) ||
+    t1 <= 0 ||
+    t2 <= 0
+  ) {
+    return false;
+  }
   const diff = Math.abs(t1 - t2);
   const mean = (t1 + t2) / 2;
   return diff / mean > tolerance;
+}
+
+/**
+ * Devuelve el subconjunto de variables cuya diferencia entre Toma 1 y Toma 2
+ * supera la tolerancia técnica ISAK y por ende deben incluirse en la 3ra pasada.
+ */
+export function getVariablesNeedingThirdTake(
+  takes: Takes,
+  variables: VariableDef[]
+): VariableDef[] {
+  return variables.filter((v) => needsThirdTake(takes[v.key], v.tolerance));
 }
 
 /**

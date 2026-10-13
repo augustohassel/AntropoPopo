@@ -4,33 +4,56 @@ import {
   UserPlus,
   Search,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   PlusCircle,
   Calendar,
   Flame,
   Weight,
   Compass,
+  History,
 } from 'lucide-react';
 import { db } from '../../db';
-import { Patient } from '../../types';
+import { Measurement, Patient } from '../../types';
 import { PatientModal } from './PatientModal';
 import { computeResults } from '../../utils/calculator';
 
 interface PatientListProps {
   onSelectPatient: (patientId: string) => void;
+  onSelectMeasurement?: (patientId: string, measurementId: string) => void;
   onNewMeasurement: (patientId: string) => void;
+}
+
+function formatMeasurementLabel(
+  meas: Measurement,
+  allPatientMeas: Measurement[]
+): string {
+  const sameDateCount = allPatientMeas.filter((m) => m.date === meas.date).length;
+  if (sameDateCount > 1 && meas.createdAt) {
+    const timeStr = new Date(meas.createdAt).toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${meas.date} (${timeStr})`;
+  }
+  return meas.date;
 }
 
 export const PatientList: React.FC<PatientListProps> = ({
   onSelectPatient,
+  onSelectMeasurement,
   onNewMeasurement,
 }) => {
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedPatientId, setExpandedPatientId] = useState<string | null>(null);
 
   const patients = useLiveQuery(() => db.patients.toArray(), []);
   const measurements = useLiveQuery(() => db.measurements.toArray(), []);
 
-  const handleSavePatient = async (patientData: Omit<Patient, 'createdAt' | 'updatedAt'>) => {
+  const handleSavePatient = async (
+    patientData: Omit<Patient, 'createdAt' | 'updatedAt'>
+  ) => {
     const now = Date.now();
     await db.patients.put({
       ...patientData,
@@ -99,12 +122,17 @@ export const PatientList: React.FC<PatientListProps> = ({
           filteredPatients.map((patient) => {
             const patientMeas = (measurements ?? [])
               .filter((m) => m.patientId === patient.id)
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+              .sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime() ||
+                  b.createdAt - a.createdAt
+              );
 
             const latestMeas = patientMeas[0];
             const results = latestMeas
               ? computeResults(latestMeas.finals, patient, latestMeas.date)
               : null;
+            const isExpanded = expandedPatientId === patient.id;
 
             return (
               <div
@@ -132,7 +160,9 @@ export const PatientList: React.FC<PatientListProps> = ({
                     <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
                       <Calendar className="w-3 h-3 text-slate-500" />
                       {latestMeas ? (
-                        <span>Última toma: {latestMeas.date}</span>
+                        <span>
+                          Última toma: {formatMeasurementLabel(latestMeas, patientMeas)}
+                        </span>
                       ) : (
                         <span>Sin mediciones previas</span>
                       )}
@@ -143,12 +173,17 @@ export const PatientList: React.FC<PatientListProps> = ({
 
                 {/* Métricas destacadas de la última medición */}
                 {results && (
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/60 text-xs">
+                  <div
+                    onClick={() => onSelectPatient(patient.id)}
+                    className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/60 text-xs cursor-pointer"
+                  >
                     <div className="flex items-center gap-1.5 bg-slate-900/60 px-2.5 py-1.5 rounded-xl border border-slate-800/50">
                       <Weight className="w-3.5 h-3.5 text-slate-400" />
                       <div>
                         <span className="text-[10px] text-slate-500 block">Peso</span>
-                        <span className="font-bold text-white">{results.weight} kg</span>
+                        <span className="font-bold text-white">
+                          {results.weight ?? '—'} kg
+                        </span>
                       </div>
                     </div>
 
@@ -156,10 +191,10 @@ export const PatientList: React.FC<PatientListProps> = ({
                       <Flame className="w-3.5 h-3.5 text-rose-400" />
                       <div>
                         <span className="text-[10px] text-slate-500 block">
-                          % Grasa ({results.primaryFat?.method})
+                          % Grasa ({results.primaryFat?.method ?? '—'})
                         </span>
                         <span className="font-bold text-rose-400">
-                          {results.primaryFat?.fatPct}%
+                          {results.primaryFat?.fatPct ?? '—'}%
                         </span>
                       </div>
                     </div>
@@ -176,12 +211,35 @@ export const PatientList: React.FC<PatientListProps> = ({
                   </div>
                 )}
 
-                {/* Botón rápido de acción */}
+                {/* Botón de historial desplegable y acción de nueva medición */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-slate-500">
-                    {patientMeas.length} medición{patientMeas.length === 1 ? '' : 'es'}
-                  </span>
+                  {patientMeas.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedPatientId(isExpanded ? null : patient.id)
+                      }
+                      className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-300 hover:text-brand-300 py-1 px-2.5 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-brand-500/30 transition-all"
+                    >
+                      <History className="w-3.5 h-3.5 text-brand-400" />
+                      <span>
+                        {patientMeas.length} medición
+                        {patientMeas.length === 1 ? '' : 'es'}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      )}
+                    </button>
+                  ) : (
+                    <span className="text-[11px] text-slate-500">
+                      0 mediciones
+                    </span>
+                  )}
+
                   <button
+                    type="button"
                     onClick={() => onNewMeasurement(patient.id)}
                     className="flex items-center gap-1 text-xs font-semibold text-brand-400 hover:text-brand-300 py-1 px-2.5 rounded-lg hover:bg-brand-500/10 transition-colors"
                   >
@@ -189,6 +247,66 @@ export const PatientList: React.FC<PatientListProps> = ({
                     <span>Medir</span>
                   </button>
                 </div>
+
+                {/* Historial desplegable de mediciones individuales */}
+                {isExpanded && patientMeas.length > 0 && (
+                  <div className="pt-2 border-t border-slate-800/80 space-y-1.5 animate-fade-up">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
+                      Historial de mediciones ({patientMeas.length})
+                    </span>
+                    <div className="space-y-1.5">
+                      {patientMeas.map((meas, idx) => {
+                        const measRes = computeResults(
+                          meas.finals,
+                          patient,
+                          meas.date
+                        );
+                        const chronologicalNum = patientMeas.length - idx;
+
+                        return (
+                          <button
+                            key={meas.id}
+                            type="button"
+                            onClick={() =>
+                              onSelectMeasurement
+                                ? onSelectMeasurement(patient.id, meas.id)
+                                : onSelectPatient(patient.id)
+                            }
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-slate-800/80 hover:border-brand-500/40 text-xs transition-all group/item"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-brand-300">
+                                #{chronologicalNum}
+                              </span>
+                              <span className="font-mono font-semibold text-white">
+                                {formatMeasurementLabel(meas, patientMeas)}
+                              </span>
+                              {idx === 0 && (
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30">
+                                  Última
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2.5 text-[11px] font-mono">
+                              <span className="text-slate-300">
+                                {measRes.weight !== undefined
+                                  ? `${measRes.weight} kg`
+                                  : '—'}
+                              </span>
+                              <span className="text-rose-400 font-semibold">
+                                {measRes.primaryFat?.fatPct !== undefined
+                                  ? `${measRes.primaryFat.fatPct}%`
+                                  : '—'}
+                              </span>
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover/item:text-brand-400 transition-colors" />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })
@@ -203,3 +321,4 @@ export const PatientList: React.FC<PatientListProps> = ({
     </div>
   );
 };
+
