@@ -33,9 +33,10 @@ Se adopta la **Alternativa 3**:
    - El nutricionista active la previsualización **"Ver como paciente"** desde `MeasurementDetail`.
 3. Enriquecer `PatientDashboard` con la tabla completa de variables ISAK medidas y las notas de la consulta seleccionada.
 4. Generar automáticamente un PIN aleatorio de 4 dígitos (`1000`–`9999`, distinto de `1234`) al dar de alta un nuevo paciente en `PatientModal`.
+5. Eliminar la carga automática de datos semilla de muestra (`Francis Holway` y paciente ficticio) en `IndexedDB`, solicitando en su lugar un onboarding inicial obligatorio (`OnboardingView`) donde el profesional configura su perfil (o restaura un backup `.json`) antes de cargar a su primer paciente.
 
 ## Consecuencias y Trade-offs
-- **Simplicidad operativa**: El nutricionista gestiona pacientes y mediciones sin distracciones, pudiendo previsualizar en 1 clic la vista exacta del paciente.
+- **Simplicidad operativa y sin datos ficticios**: El nutricionista inicia con una base limpia configurada a su nombre y gestiona pacientes reales sin tener que borrar registros de ejemplo ni correr riesgo de emitir informes con el nombre de otro profesional.
 - **Enlaces inmutables y reutilizables**: El paciente puede abrir su enlace desde WhatsApp cuantas veces quiera sin depender del almacenamiento local del navegador ni ver controles del modo profesional.
 - **Privacidad reforzada**: Los datos del paciente abierto por link residen únicamente en la memoria de la pestaña activa (`sessionStorage`) y cada paciente nuevo recibe un PIN aleatorio único por defecto.
 

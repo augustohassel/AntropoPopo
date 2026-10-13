@@ -9,9 +9,10 @@ import { PatientList } from './features/nutri/PatientList';
 import { NewMeasurementStepper } from './features/nutri/NewMeasurementStepper';
 import { MeasurementDetail } from './features/nutri/MeasurementDetail';
 import { SettingsView } from './features/nutri/SettingsView';
+import { OnboardingView } from './features/nutri/OnboardingView';
 import { PatientDashboard } from './features/patient/PatientDashboard';
 import { ImportModal } from './features/patient/ImportModal';
-import { extractImportTokenFromHash, generateRandomPin } from './utils/crypto';
+import { extractImportTokenFromHash } from './utils/crypto';
 
 const getSessionCacheKey = (token: string) => `antropopopo_shared_${token.slice(0, 32)}`;
 
@@ -51,7 +52,7 @@ export const App: React.FC = () => {
   // Consultas reactivas de Dexie (para el flujo del nutricionista)
   const patients = useLiveQuery(() => db.patients.toArray(), []);
   const measurements = useLiveQuery(() => db.measurements.toArray(), []);
-  const professional = useLiveQuery(() => getProfessionalProfile(), []);
+  const professional = useLiveQuery(() => getProfessionalProfile(), [], 'loading' as const);
 
   // Inicialización de base de datos y detección de token en URL #
   useEffect(() => {
@@ -123,6 +124,7 @@ export const App: React.FC = () => {
     setIsMeasuring(false);
     setIsPreviewingAsPatient(false);
     setActiveMeasurementId(measurementId);
+    setCurrentNutriTab('patients');
   };
 
   // ──────────────── 1. VISTA WEB EFÍMERA DEL PACIENTE VÍA ENLACE (#import=...) ────────────────
@@ -163,7 +165,7 @@ export const App: React.FC = () => {
     );
   }
 
-  if (!isDbReady) {
+  if (!isDbReady || professional === 'loading') {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 space-y-3">
         <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
@@ -172,7 +174,19 @@ export const App: React.FC = () => {
     );
   }
 
-  // ──────────────── 2. PREVISUALIZACIÓN "VER COMO PACIENTE" DESDE EL NUTRICIONISTA ────────────────
+  // ──────────────── 2. ONBOARDING INICIAL DEL PROFESIONAL (SIN DATOS PRECARGADOS) ────────────────
+  if (professional === null) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-brand-500/30 selection:text-brand-100">
+        <Header subtitle="Configuración Inicial del Profesional" />
+        <main className="flex-1 w-full max-w-lg mx-auto">
+          <OnboardingView />
+        </main>
+      </div>
+    );
+  }
+
+  // ──────────────── 3. PREVISUALIZACIÓN "VER COMO PACIENTE" DESDE EL NUTRICIONISTA ────────────────
   if (isPreviewingAsPatient && activeMeasurementId) {
     const activeMeas = measurements?.find((m) => m.id === activeMeasurementId);
     const activePat = patients?.find((p) => p.id === activeMeas?.patientId);
@@ -222,7 +236,10 @@ export const App: React.FC = () => {
     }
   }
 
-  // ──────────────── 3. APLICACIÓN PRINCIPAL DEL NUTRICIONISTA ────────────────
+  // ──────────────── 4. APLICACIÓN PRINCIPAL DEL NUTRICIONISTA ────────────────
+  const targetPatientForStepper =
+    patients?.find((p) => p.id === activePatientId) ?? patients?.[0];
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-brand-500/30 selection:text-brand-100">
       <Header subtitle="Gestión Profesional ISAK Nivel 1" />
@@ -231,9 +248,9 @@ export const App: React.FC = () => {
         {currentNutriTab === 'patients' && (
           <>
             {/* 1. Vista de carga guiada si está en flujo de medición */}
-            {isMeasuring && activePatientId ? (
+            {isMeasuring && activePatientId && patients?.find((p) => p.id === activePatientId) ? (
               <NewMeasurementStepper
-                patient={patients?.find((p) => p.id === activePatientId)!}
+                patient={patients.find((p) => p.id === activePatientId)!}
                 onCancel={() => setIsMeasuring(false)}
                 onSaved={handleMeasurementSaved}
               />
@@ -274,24 +291,20 @@ export const App: React.FC = () => {
         )}
 
         {currentNutriTab === 'new-measurement' && (
-          <NewMeasurementStepper
-            patient={
-              patients?.find((p) => p.id === activePatientId) ??
-              patients?.[0] ?? {
-                id: 'sample',
-                name: 'Paciente',
-                sex: 'M',
-                birthDate: '1995-01-01',
-                isAthlete: true,
-                primaryFatMethod: 'WITHERS',
-                pin: generateRandomPin(),
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              }
-            }
-            onCancel={() => setCurrentNutriTab('patients')}
-            onSaved={handleMeasurementSaved}
-          />
+          <>
+            {targetPatientForStepper ? (
+              <NewMeasurementStepper
+                patient={targetPatientForStepper}
+                onCancel={() => setCurrentNutriTab('patients')}
+                onSaved={handleMeasurementSaved}
+              />
+            ) : (
+              <PatientList
+                onSelectPatient={handleSelectPatient}
+                onNewMeasurement={handleStartNewMeasurement}
+              />
+            )}
+          </>
         )}
 
         {currentNutriTab === 'settings' && <SettingsView />}
@@ -315,4 +328,5 @@ export const App: React.FC = () => {
 };
 
 export default App;
+
 

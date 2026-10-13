@@ -38,7 +38,14 @@ export const SettingsView: React.FC = () => {
 
   const loadSettings = async () => {
     const prof = await getProfessionalProfile();
-    setProfile(prof);
+    setProfile(
+      prof ?? {
+        name: '',
+        license: '',
+        phone: '',
+        email: '',
+      }
+    );
 
     if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persisted) {
       const persisted = await navigator.storage.persisted();
@@ -122,12 +129,12 @@ export const SettingsView: React.FC = () => {
   const handleReset = async () => {
     if (
       confirm(
-        '¿Restablecer base de datos? Se restaurarán los datos de prueba y se perderán cambios no exportados.'
+        '¿Borrar todos los datos locales de este dispositivo? Se eliminarán pacientes, mediciones y perfil profesional no exportados.'
       )
     ) {
       await resetDatabase();
       await loadSettings();
-      showMessage('Base de datos restablecida a los valores iniciales.', true);
+      showMessage('Todos los datos locales fueron eliminados.', true);
     }
   };
 
@@ -168,7 +175,7 @@ export const SettingsView: React.FC = () => {
               required
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              placeholder="Ej. Francis Holway"
+              placeholder="Ej. Lic. María Pérez"
               className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-brand-500"
             />
           </div>
@@ -182,7 +189,7 @@ export const SettingsView: React.FC = () => {
                 type="text"
                 value={profile.license ?? ''}
                 onChange={(e) => setProfile({ ...profile, license: e.target.value })}
-                placeholder="Ej. MN 4822"
+                placeholder="Ej. MN 12345"
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-brand-500"
               />
             </div>
@@ -194,7 +201,7 @@ export const SettingsView: React.FC = () => {
                 type="text"
                 value={profile.phone ?? ''}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                placeholder="Ej. 4822-9436"
+                placeholder="Ej. +54 9 11 ..."
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-brand-500"
               />
             </div>
@@ -208,7 +215,7 @@ export const SettingsView: React.FC = () => {
               type="email"
               value={profile.email ?? ''}
               onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-              placeholder="fholway@hotmail.com"
+              placeholder="profesional@ejemplo.com"
               className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-brand-500"
             />
           </div>
@@ -288,18 +295,18 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Zona de peligro: Resetear base de datos */}
+      {/* Zona de peligro: Borrar todos los datos locales */}
       <div className="glass-panel p-4 rounded-2xl border border-rose-900/30 space-y-2">
         <h4 className="text-xs font-bold text-rose-400">Zona de Riesgo</h4>
         <p className="text-[11px] text-slate-400">
-          Podés restablecer la base de datos a los valores de muestra si querés empezar de cero.
+          Podés eliminar todos los pacientes, mediciones y ajustes de este dispositivo para empezar desde cero.
         </p>
         <button
           onClick={handleReset}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>Restablecer Datos de Muestra</span>
+          <span>Borrar Todos los Datos Locales</span>
         </button>
       </div>
     </div>

@@ -68,15 +68,32 @@ export const PatientList: React.FC<PatientListProps> = ({
 
       {/* Lista de pacientes */}
       <div className="space-y-3">
-        {filteredPatients.length === 0 ? (
+        {(patients ?? []).length === 0 ? (
+          <div className="p-8 text-center glass-panel rounded-2xl border border-slate-800 space-y-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400 block">
+              Paso 2 de 2 · Comenzar a Evaluar
+            </span>
+            <h3 className="text-base font-bold text-white">
+              Cargá tu primer paciente
+            </h3>
+            <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+              Creá la ficha con sus datos básicos (sexo, fecha de nacimiento y perfil atlético) para iniciar su primera medición ISAK Nivel 1.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-500 text-slate-950 font-bold text-xs hover:bg-brand-400 shadow-lg shadow-brand-500/20 transition-all"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Crear Primer Paciente</span>
+              </button>
+            </div>
+          </div>
+        ) : filteredPatients.length === 0 ? (
           <div className="p-8 text-center glass-panel rounded-2xl border border-slate-800">
-            <p className="text-sm text-slate-400">No se encontraron pacientes.</p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="mt-3 text-xs text-brand-400 font-semibold hover:underline"
-            >
-              + Agregar el primer paciente
-            </button>
+            <p className="text-sm text-slate-400">
+              No se encontraron pacientes para "{search}".
+            </p>
           </div>
         ) : (
           filteredPatients.map((patient) => {
