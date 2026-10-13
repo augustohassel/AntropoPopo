@@ -1,6 +1,5 @@
 import Dexie, { Table } from 'dexie';
 import { BackupData, Measurement, Patient, ProfessionalProfile } from '../types';
-import { INITIAL_MEASUREMENTS, INITIAL_PATIENTS, INITIAL_PROFESSIONAL } from './seeds';
 
 export interface SettingEntry {
   key: string;
@@ -39,38 +38,39 @@ export async function requestPersistentStorage(): Promise<boolean> {
 }
 
 /**
- * Inicializa la base de datos con datos de muestra si es la primera vez
+ * Inicializa la base de datos y limpia posibles datos semilla heredados
  */
 export async function initializeDatabase(): Promise<void> {
   // Pedir almacenamiento persistente de forma no bloqueante
   requestPersistentStorage().catch(() => {});
 
-  const hasInitialized = typeof window !== 'undefined' && localStorage.getItem(INITIALIZED_KEY);
-  if (hasInitialized) {
-    return;
+  // Limpiar perfil profesional semilla heredado ('Francis Holway') si nunca fue personalizado
+  const profRow = await db.settings.get(PROFESSIONAL_KEY);
+  if (
+    profRow?.value?.name === 'Francis Holway' &&
+    profRow?.value?.email === 'fholway@hotmail.com'
+  ) {
+    await db.settings.delete(PROFESSIONAL_KEY);
   }
 
-  const patientCount = await db.patients.count();
-  if (patientCount === 0) {
-    await db.patients.bulkAdd(INITIAL_PATIENTS);
-    await db.measurements.bulkAdd(INITIAL_MEASUREMENTS);
-    await db.settings.put({
-      key: PROFESSIONAL_KEY,
-      value: INITIAL_PROFESSIONAL,
-    });
-  }
-
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(INITIALIZED_KEY, 'true');
+  // Limpiar atributo professional incrustado en el paciente de muestra si existía
+  const samplePatient = await db.patients.get('patient-augusto-sample');
+  if (samplePatient?.professional) {
+    const { professional: _removed, ...rest } = samplePatient;
+    await db.patients.put(rest);
   }
 }
 
 /**
- * Obtiene el perfil del profesional
+ * Obtiene el perfil del profesional (o null si aún no fue configurado)
  */
-export async function getProfessionalProfile(): Promise<ProfessionalProfile> {
+export async function getProfessionalProfile(): Promise<ProfessionalProfile | null> {
   const row = await db.settings.get(PROFESSIONAL_KEY);
-  return (row?.value as ProfessionalProfile) ?? INITIAL_PROFESSIONAL;
+  const val = row?.value as ProfessionalProfile | undefined;
+  if (!val || !val.name?.trim()) {
+    return null;
+  }
+  return val;
 }
 
 /**
@@ -89,7 +89,7 @@ export async function saveProfessionalProfile(profile: ProfessionalProfile): Pro
 export async function exportBackup(): Promise<string> {
   const patients = await db.patients.toArray();
   const measurements = await db.measurements.toArray();
-  const professional = await getProfessionalProfile();
+  const professional = (await getProfessionalProfile()) ?? undefined;
 
   const backup: BackupData = {
     app: 'AntropoPopo',

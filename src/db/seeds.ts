@@ -17,7 +17,6 @@ export const INITIAL_PATIENTS: Patient[] = [
     primaryFatMethod: 'WITHERS',
     pin: '1234',
     notes: 'Paciente de referencia. Protocolo ISAK Nivel 1.',
-    professional: INITIAL_PROFESSIONAL,
     createdAt: new Date('2026-10-10').getTime(),
     updatedAt: new Date('2026-10-10').getTime(),
   },
