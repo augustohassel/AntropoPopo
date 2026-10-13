@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronLeft, Eye } from 'lucide-react';
 import { db, initializeDatabase, getProfessionalProfile } from './db';
-import { ProfessionalProfile, SharedReportPayload } from './types';
+import { SharedReportPayload } from './types';
 import { Header } from './components/layout/Header';
 import { BottomNav, NutriTab, PatientTab } from './components/layout/BottomNav';
 import { PatientList } from './features/nutri/PatientList';
@@ -47,17 +47,16 @@ export const App: React.FC = () => {
   });
 
   const [isDbReady, setIsDbReady] = useState(false);
-  const [professional, setProfessional] = useState<ProfessionalProfile | undefined>(undefined);
 
   // Consultas reactivas de Dexie (para el flujo del nutricionista)
   const patients = useLiveQuery(() => db.patients.toArray(), []);
   const measurements = useLiveQuery(() => db.measurements.toArray(), []);
+  const professional = useLiveQuery(() => getProfessionalProfile(), []);
 
   // Inicialización de base de datos y detección de token en URL #
   useEffect(() => {
     initializeDatabase().then(() => {
       setIsDbReady(true);
-      getProfessionalProfile().then(setProfessional);
     });
 
     const checkHash = () => {
