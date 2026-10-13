@@ -9,9 +9,13 @@ Este documento registra la jerga funcional, entidades de negocio y conceptos ant
 - **Alcance / Propósito**: Constituye el catálogo completo de variables que el nutricionista releva en una consulta dentro de la aplicación y a partir del cual se calculan todos los indicadores de composición corporal y somatotipo.
 - **Lo que NO es**: No incluye las variables adicionales del Perfil Completo (ISAK Nivel 2).
 
-### Toma (Take) y Valor Final (Final)
-- **Definición**: Una **Toma** es cada medición individual registrada por el profesional para una variable durante la sesión. El **Valor Final** es el valor consolidado de esa variable que se utiliza en las fórmulas antropométricas.
-- **Alcance / Propósito**: Siguiendo la normativa ISAK, se exigen 2 tomas iniciales por variable. Si la diferencia relativa entre ambas supera la tolerancia permitida ($> 5\%$ en pliegues cutáneos o $> 1\%$ en datos básicos, diámetros y perímetros), se solicita una 3ra toma de desempate. El Valor Final se calcula como el **promedio** cuando hay 2 tomas o la **mediana** cuando hay 3 tomas.
+### Toma (Take), Pasada (Serie ISAK) y Valor Final (Final)
+- **Definición**: Una **Toma** es cada medición individual registrada por el profesional para un sitio anatómico durante la sesión. Una **Pasada (o Serie ISAK)** es el recorrido secuencial completo por el listado de variables antropométricas registrando una única toma por sitio antes de volver a comenzar. El **Valor Final** es el valor consolidado de cada variable que se utiliza en las fórmulas antropométricas.
+- **Alcance / Propósito**: Siguiendo la metodología real de trabajo ISAK en consultorio (para evitar sesgos de memoria del evaluador y compresión inmediata del tejido adiposo), la carga se organiza en hasta 3 pasadas secuenciales:
+  1. **1ra Pasada (Toma 1)**: Recorrido de todas las variables registrando la primera medición (con opción de finalizar con 1 sola pasada en consultas rápidas).
+  2. **2da Pasada (Toma 2)**: Segundo recorrido sobre las variables para registrar la segunda medición y evaluar el error técnico relativo ($\Delta$).
+  3. **3ra Pasada (Toma 3 de desempate)**: Recorrido filtrado exclusivamente sobre aquellas variables cuya diferencia entre Toma 1 y Toma 2 superó la tolerancia ISAK ($> 5\%$ en pliegues cutáneos o $> 1\%$ en datos básicos, diámetros y perímetros).
+  El Valor Final se resuelve como el **valor único** si hay 1 toma, el **promedio** cuando hay 2 tomas o la **mediana** cuando hay 3 tomas.
 - **Lo que NO es**: Las tomas crudas pertenecen exclusivamente al registro de auditoría del nutricionista y no se transmiten en el enlace compartido al paciente (quien sólo recibe los valores finales).
 
 ### Somatotipo de Heath-Carter y Somatocarta
