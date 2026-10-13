@@ -7,6 +7,7 @@ import {
   Flame,
   Trash2,
   Compass,
+  Eye,
 } from 'lucide-react';
 import { Measurement, Patient, ProfessionalProfile } from '../../types';
 import { computeResults } from '../../utils/calculator';
@@ -22,6 +23,7 @@ interface MeasurementDetailProps {
   professional?: ProfessionalProfile;
   onBack: () => void;
   onDeleted: () => void;
+  onPreviewAsPatient: () => void;
 }
 
 export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
@@ -31,6 +33,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   professional,
   onBack,
   onDeleted,
+  onPreviewAsPatient,
 }) => {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -58,16 +61,24 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   return (
     <div className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto pb-28 animate-fade-up">
       {/* Barra superior de navegación */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-colors shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Volver</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={onPreviewAsPatient}
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
+            title="Previsualizar cómo verá el informe el paciente"
+          >
+            <Eye className="w-3.5 h-3.5 text-brand-400" />
+            <span>Ver como paciente</span>
+          </button>
           <button
             onClick={() => setIsShareOpen(true)}
             className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-brand-500 text-slate-950 font-bold text-xs hover:bg-brand-400 shadow-lg shadow-brand-500/20 transition-all"

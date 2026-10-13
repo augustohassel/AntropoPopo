@@ -140,3 +140,11 @@ export interface BackupData {
   patients: Patient[];
   measurements: Measurement[];
 }
+
+export interface SharedReportPayload {
+  patient: Patient;
+  professional?: ProfessionalProfile;
+  measurements: Measurement[];
+  exportedAt: string;
+}
+

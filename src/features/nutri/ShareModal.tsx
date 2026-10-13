@@ -116,7 +116,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
             Los datos van comprimidos dentro del enlace y cifrados con el PIN del paciente.
-            Ningún dato pasa por servidores. Al abrirlo, el paciente lo guardará en su propio celular.
+            Ningún dato pasa por servidores. Al abrirlo e ingresar su PIN, el paciente visualizará su informe completo directamente en el navegador.
           </p>
           <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
             <span className="text-slate-400">PIN asignado al paciente:</span>
