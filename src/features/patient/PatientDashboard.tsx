@@ -88,7 +88,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     .filter(Boolean) as any[];
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto pb-28 animate-fade-up">
+    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">
       {/* Encabezado con selector de consulta */}
       <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-2">
         <div className="flex items-center justify-between">

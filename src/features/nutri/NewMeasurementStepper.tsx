@@ -114,7 +114,7 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
   }).length;
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto pb-28 animate-fade-up">
+    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">
       {/* Encabezado con datos del paciente */}
       <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
         <div>

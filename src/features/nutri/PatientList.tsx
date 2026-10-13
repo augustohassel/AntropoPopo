@@ -44,7 +44,7 @@ export const PatientList: React.FC<PatientListProps> = ({
   );
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto pb-24">
+    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto">
       {/* Barra superior con buscador y botón crear */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
