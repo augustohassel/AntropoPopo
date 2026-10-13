@@ -100,13 +100,28 @@ export const App: React.FC = () => {
     // Si tiene mediciones, abrir la última medición directamente
     const patientMeas = (measurements ?? [])
       .filter((m) => m.patientId === patientId)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime() ||
+          b.createdAt - a.createdAt
+      );
 
     if (patientMeas.length > 0) {
       setActiveMeasurementId(patientMeas[0].id);
     } else {
       setIsMeasuring(true);
     }
+  };
+
+  const handleSelectPatientMeasurement = (
+    patientId: string,
+    measurementId: string
+  ) => {
+    setActivePatientId(patientId);
+    setActiveMeasurementId(measurementId);
+    setIsMeasuring(false);
+    setIsPreviewingAsPatient(false);
+    setCurrentNutriTab('patients');
   };
 
   const handleStartNewMeasurement = (patientId?: string) => {
@@ -261,9 +276,13 @@ export const App: React.FC = () => {
                 const activePat = patients?.find((p) => p.id === activeMeas?.patientId);
                 if (!activeMeas || !activePat) return null;
 
-                const allMeas = (measurements ?? []).filter(
-                  (m) => m.patientId === activePat.id
-                );
+                const allMeas = (measurements ?? [])
+                  .filter((m) => m.patientId === activePat.id)
+                  .sort(
+                    (a, b) =>
+                      new Date(b.date).getTime() - new Date(a.date).getTime() ||
+                      b.createdAt - a.createdAt
+                  );
 
                 return (
                   <MeasurementDetail
@@ -272,11 +291,18 @@ export const App: React.FC = () => {
                     allPatientMeasurements={allMeas}
                     professional={professional}
                     onBack={() => setActiveMeasurementId(null)}
-                    onDeleted={() => setActiveMeasurementId(null)}
+                    onDeleted={() => {
+                      const remaining = allMeas.filter(
+                        (m) => m.id !== activeMeas.id
+                      );
+                      setActiveMeasurementId(remaining[0]?.id ?? null);
+                    }}
                     onPreviewAsPatient={() => {
                       setCurrentPatientTab('summary');
                       setIsPreviewingAsPatient(true);
                     }}
+                    onSelectMeasurement={(measId) => setActiveMeasurementId(measId)}
+                    onNewMeasurement={() => handleStartNewMeasurement(activePat.id)}
                   />
                 );
               })()
@@ -284,6 +310,7 @@ export const App: React.FC = () => {
               /* 3. Lista principal de pacientes */
               <PatientList
                 onSelectPatient={handleSelectPatient}
+                onSelectMeasurement={handleSelectPatientMeasurement}
                 onNewMeasurement={handleStartNewMeasurement}
               />
             )}
@@ -301,6 +328,7 @@ export const App: React.FC = () => {
             ) : (
               <PatientList
                 onSelectPatient={handleSelectPatient}
+                onSelectMeasurement={handleSelectPatientMeasurement}
                 onNewMeasurement={handleStartNewMeasurement}
               />
             )}
