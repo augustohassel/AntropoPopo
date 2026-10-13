@@ -8,6 +8,8 @@ import {
   Trash2,
   Compass,
   Eye,
+  History,
+  PlusCircle,
 } from 'lucide-react';
 import { Measurement, Patient, ProfessionalProfile } from '../../types';
 import { computeResults } from '../../utils/calculator';
@@ -24,6 +26,23 @@ interface MeasurementDetailProps {
   onBack: () => void;
   onDeleted: () => void;
   onPreviewAsPatient: () => void;
+  onSelectMeasurement?: (measurementId: string) => void;
+  onNewMeasurement?: () => void;
+}
+
+function formatMeasurementLabel(
+  meas: Measurement,
+  allMeas: Measurement[]
+): string {
+  const sameDateCount = allMeas.filter((m) => m.date === meas.date).length;
+  if (sameDateCount > 1 && meas.createdAt) {
+    const timeStr = new Date(meas.createdAt).toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${meas.date} (${timeStr})`;
+  }
+  return meas.date;
 }
 
 export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
@@ -34,15 +53,29 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   onBack,
   onDeleted,
   onPreviewAsPatient,
+  onSelectMeasurement,
+  onNewMeasurement,
 }) => {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const sortedMeasurements = [...allPatientMeasurements].sort(
+    (a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime() ||
+      b.createdAt - a.createdAt
+  );
+
   const results = computeResults(measurement.finals, patient, measurement.date);
 
   // Somatotipos previos para la trayectoria en la somatocarta
-  const previousSomatotypes = allPatientMeasurements
-    .filter((m) => m.id !== measurement.id && new Date(m.date) < new Date(measurement.date))
+  const previousSomatotypes = sortedMeasurements
+    .filter(
+      (m) =>
+        m.id !== measurement.id &&
+        (new Date(m.date).getTime() < new Date(measurement.date).getTime() ||
+          (m.date === measurement.date && m.createdAt < measurement.createdAt))
+    )
+    .reverse()
     .map((m) => computeResults(m.finals, patient, m.date).somatotype)
     .filter(Boolean) as any[];
 
@@ -58,6 +91,10 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
     }
   };
 
+  const currentIdx = sortedMeasurements.findIndex((m) => m.id === measurement.id);
+  const chronologicalNumber =
+    currentIdx >= 0 ? sortedMeasurements.length - currentIdx : 1;
+
   return (
     <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">
       {/* Barra superior de navegación */}
@@ -67,10 +104,20 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-colors shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span>Volver</span>
+          <span>Pacientes</span>
         </button>
 
         <div className="flex items-center gap-1.5">
+          {onNewMeasurement && (
+            <button
+              onClick={onNewMeasurement}
+              className="flex items-center gap-1 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-brand-300 font-semibold text-xs hover:bg-slate-700 hover:text-brand-200 transition-all"
+              title="Cargar una nueva medición para este paciente"
+            >
+              <PlusCircle className="w-3.5 h-3.5 text-brand-400" />
+              <span className="hidden sm:inline">Nueva</span>
+            </button>
+          )}
           <button
             onClick={onPreviewAsPatient}
             className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
@@ -97,19 +144,20 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
         </div>
       </div>
 
-      {/* Encabezado del informe */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-2">
+      {/* Encabezado del informe con selector de historial */}
+      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400">
-              Informe de Composición Corporal Nivel 1
+              Informe ISAK Nivel 1 · Medición #{chronologicalNumber} de{' '}
+              {sortedMeasurements.length}
             </span>
             <h2 className="text-xl font-bold text-white">{patient.name}</h2>
           </div>
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-white flex items-center gap-1 justify-end">
               <Calendar className="w-3 h-3 text-slate-400" />
-              {measurement.date}
+              {formatMeasurementLabel(measurement, sortedMeasurements)}
             </span>
             <span className="text-[11px] text-slate-400 block">
               Edad: {results.ageYears} años
@@ -117,9 +165,67 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           </div>
         </div>
 
+        {/* Selector de historial de mediciones del paciente */}
+        {sortedMeasurements.length > 1 && onSelectMeasurement && (
+          <div className="pt-2.5 border-t border-slate-800/80 space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+              <History className="w-3 h-3 text-brand-400" />
+              <span>
+                Historial de Mediciones ({sortedMeasurements.length})
+              </span>
+            </span>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {sortedMeasurements.map((m, idx) => {
+                const isSelected = m.id === measurement.id;
+                const num = sortedMeasurements.length - idx;
+                const mRes = computeResults(m.finals, patient, m.date);
+
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => onSelectMeasurement(m.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono shrink-0 transition-all text-left border ${
+                      isSelected
+                        ? 'bg-brand-500 text-slate-950 font-bold border-brand-400 shadow-md shadow-brand-500/25'
+                        : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`text-[10px] px-1 rounded ${
+                          isSelected
+                            ? 'bg-slate-950/20 text-slate-950 font-bold'
+                            : 'bg-slate-800 text-brand-300'
+                        }`}
+                      >
+                        #{num}
+                      </span>
+                      <span>{formatMeasurementLabel(m, sortedMeasurements)}</span>
+                    </div>
+                    <div
+                      className={`text-[10px] mt-0.5 ${
+                        isSelected ? 'text-slate-900 font-semibold' : 'text-slate-400'
+                      }`}
+                    >
+                      {mRes.weight !== undefined ? `${mRes.weight} kg` : '—'} ·{' '}
+                      {mRes.primaryFat?.fatPct !== undefined
+                        ? `${mRes.primaryFat.fatPct}%`
+                        : '—'}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {professional && (
           <div className="pt-2 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center justify-between">
-            <span>Evaluado por: <strong className="text-slate-300">{professional.name}</strong></span>
+            <span>
+              Evaluado por:{' '}
+              <strong className="text-slate-300">{professional.name}</strong>
+            </span>
             {professional.license && <span>{professional.license}</span>}
           </div>
         )}
@@ -283,6 +389,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
             <thead>
               <tr className="border-b border-slate-800 text-[11px] text-slate-500">
                 <th className="pb-2 font-semibold">Variable</th>
+                <th className="pb-2 font-semibold text-right">Tomas (T1 / T2 / T3)</th>
                 <th className="pb-2 font-semibold text-right">Valor Final</th>
               </tr>
             </thead>
@@ -291,9 +398,16 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
                 const finalVal = measurement.finals[v.key];
                 if (finalVal === undefined) return null;
 
+                const rawTakes = (measurement.takes?.[v.key] ?? []).filter(
+                  (t): t is number => typeof t === 'number' && !isNaN(t) && t > 0
+                );
+
                 return (
                   <tr key={v.key} className="py-2 hover:bg-slate-900/40">
                     <td className="py-1.5 text-slate-300">{v.label}</td>
+                    <td className="py-1.5 text-right font-mono text-[11px] text-slate-400">
+                      {rawTakes.length > 0 ? rawTakes.join(' / ') : '—'}
+                    </td>
                     <td className="py-1.5 text-right font-mono font-semibold text-white">
                       {finalVal} {v.unit}
                     </td>
