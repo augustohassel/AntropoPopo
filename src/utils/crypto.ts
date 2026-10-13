@@ -144,3 +144,18 @@ export function extractImportTokenFromHash(hashStr: string = ''): string | null 
   const params = new URLSearchParams(hash);
   return params.get('import');
 }
+
+/**
+ * Genera un PIN numérico aleatorio de 4 dígitos (1000–9999), evitando '1234'
+ */
+export function generateRandomPin(): string {
+  let pin = '1234';
+  while (pin === '1234') {
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    const num = 1000 + (array[0] % 9000);
+    pin = String(num);
+  }
+  return pin;
+}
+

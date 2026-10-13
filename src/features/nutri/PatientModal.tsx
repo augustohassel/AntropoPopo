@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X, UserPlus, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, UserPlus, Shield, RefreshCw } from 'lucide-react';
 import { FatMethod, Patient, Sex } from '../../types';
+import { generateRandomPin } from '../../utils/crypto';
 
 interface PatientModalProps {
   isOpen: boolean;
@@ -22,9 +23,21 @@ export const PatientModal: React.FC<PatientModalProps> = ({
   const [primaryFatMethod, setPrimaryFatMethod] = useState<FatMethod>(
     patientToEdit?.primaryFatMethod ?? 'WITHERS'
   );
-  const [pin, setPin] = useState(patientToEdit?.pin ?? '1234');
+  const [pin, setPin] = useState(() => patientToEdit?.pin ?? generateRandomPin());
   const [notes, setNotes] = useState(patientToEdit?.notes ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(patientToEdit?.name ?? '');
+      setSex(patientToEdit?.sex ?? 'M');
+      setBirthDate(patientToEdit?.birthDate ?? '1995-01-01');
+      setIsAthlete(patientToEdit?.isAthlete ?? true);
+      setPrimaryFatMethod(patientToEdit?.primaryFatMethod ?? 'WITHERS');
+      setPin(patientToEdit?.pin ?? generateRandomPin());
+      setNotes(patientToEdit?.notes ?? '');
+    }
+  }, [isOpen, patientToEdit]);
 
   if (!isOpen) return null;
 
@@ -41,7 +54,7 @@ export const PatientModal: React.FC<PatientModalProps> = ({
         birthDate,
         isAthlete,
         primaryFatMethod,
-        pin: pin.trim() || '1234',
+        pin: pin.trim() || generateRandomPin(),
         notes: notes.trim(),
       });
       onClose();
@@ -154,14 +167,25 @@ export const PatientModal: React.FC<PatientModalProps> = ({
                 <Shield className="w-3 h-3 text-brand-400" />
                 PIN de Cifrado
               </label>
-              <input
-                type="text"
-                maxLength={6}
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                placeholder="1234"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-center focus:outline-none focus:border-brand-500 text-xs"
-              />
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  placeholder="4 dígitos"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-center focus:outline-none focus:border-brand-500 text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setPin(generateRandomPin())}
+                  title="Generar nuevo PIN aleatorio"
+                  className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-brand-400 hover:border-slate-700 transition-colors shrink-0"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
 

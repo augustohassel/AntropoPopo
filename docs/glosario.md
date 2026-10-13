@@ -31,15 +31,16 @@ Este documento registra la jerga funcional, entidades de negocio y conceptos ant
 - **Alcance / Propósito**: Indicador regional de seguimiento de masa muscular apendicular entre mediciones.
 - **Lo que NO es**: No descuenta el área ósea humeral (corresponde al área muscular total sin corrección ósea de género).
 
-### Modo Nutricionista (`nutri`) vs. Modo Paciente (`patient`)
-- **Definición**: Los dos modos operativos de la aplicación dentro del navegador local.
-  - **Modo Nutricionista**: Permite gestionar múltiples fichas de pacientes, cargar mediciones con el Stepper ISAK, configurar datos profesionales, realizar copias de seguridad y generar enlaces cifrados.
-  - **Modo Paciente**: Vista de lectura e historial personal donde el paciente importa sus mediciones mediante enlace + PIN y consulta su evolución temporal.
-- **Alcance / Propósito**: Adapta la interfaz y las acciones disponibles según el rol del usuario en su propio dispositivo, manteniendo una única base de código PWA.
-- **Lo que NO es**: No son cuentas de usuario autenticadas contra un servidor; ambos modos operan 100% en el IndexedDB local del dispositivo donde se abren.
+### Aplicación del Nutricionista vs. Vista Web Efímera del Paciente
+- **Definición**: Separación clara de responsabilidades según el punto de entrada a la aplicación:
+  - **Aplicación del Nutricionista (`/`)**: La PWA instalada o abierta en la raíz está 100% dedicada al trabajo clínico del profesional (gestión de pacientes con PIN autogenerado, carga guiada con Stepper ISAK, previsualización *"Ver como paciente"*, generación de enlaces cifrados y copias de seguridad en `IndexedDB`).
+  - **Vista Web Efímera del Paciente (`#import=...`)**: Cuando se accede mediante un enlace compartido, la web presenta una pantalla de desbloqueo por PIN y renderiza exclusivamente el informe interactivo del paciente (Resumen con variables ISAK y notas, Somatocarta y Evolución temporal) en memoria y `sessionStorage`, conservando el hash en la URL sin escribir datos en `IndexedDB`.
+- **Alcance / Propósito**: Evita mezclar perfiles en un mismo almacenamiento local y permite al paciente consultar su informe completo directamente desde el enlace enviado por el profesional sin pasos de importación ni controles de nutricionista.
+- **Lo que NO es**: No son cuentas autenticadas contra un servidor ni modos conmutables manualmente dentro de la misma sesión local.
 
 ### Enlace Compartido Cifrado (`#import=...`)
-- **Definición**: URL generada por el nutricionista cuyo fragmento hash (`#`) contiene los datos del paciente y sus valores finales de medición empaquetados de forma posicional, comprimidos y cifrados con **AES-GCM (Web Crypto API)** utilizando una clave derivada del PIN del paciente mediante PBKDF2.
-- **Alcance / Propósito**: Habilita la transferencia segura de datos cliente-a-cliente (por WhatsApp, correo, etc.) sin pasar por ningún servidor intermedio y asegurando que el fragmento `#` nunca sea enviado en peticiones HTTP.
-- **Lo que NO es**: No es un enlace de sincronización en vivo con una nube; cada enlace representa una instantánea inmutable de las mediciones incluidas al momento de generarlo.
+- **Definición**: URL generada por el nutricionista cuyo fragmento hash (`#`) contiene los datos del paciente, del profesional evaluador y el historial de valores finales de medición cifrados con **AES-GCM (Web Crypto API)** utilizando una clave derivada del PIN de 4 dígitos del paciente mediante PBKDF2.
+- **Alcance / Propósito**: Actúa como única fuente de verdad autocontenida para que el paciente visualice su informe antropométrico completo en el navegador (pudiendo guardarlo en favoritos o abrirlo desde WhatsApp en cualquier momento) sin pasar por ningún servidor intermedio y asegurando que el fragmento `#` nunca sea enviado en peticiones HTTP.
+- **Lo que NO es**: No es un enlace de sincronización en vivo con una nube ni requiere importar datos en una base de datos local del paciente; cada enlace representa una instantánea autocontenida e inmutable de las mediciones incluidas al momento de generarlo.
+
 

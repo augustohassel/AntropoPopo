@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { encryptPayload, decryptPayload, createShareableLink, extractImportTokenFromHash } from './crypto';
+import {
+  encryptPayload,
+  decryptPayload,
+  createShareableLink,
+  extractImportTokenFromHash,
+  generateRandomPin,
+} from './crypto';
 
 describe('Cifrado y Compartición AES-GCM (Web Crypto)', () => {
   it('cifra y descifra correctamente un payload con PIN', async () => {
@@ -37,4 +43,13 @@ describe('Cifrado y Compartición AES-GCM (Web Crypto)', () => {
     const recovered = await decryptPayload<typeof data>(token!, '4321');
     expect(recovered).toEqual(data);
   });
+
+  it('autogenera un PIN aleatorio de 4 dígitos distinto de 1234', () => {
+    for (let i = 0; i < 20; i++) {
+      const pin = generateRandomPin();
+      expect(pin).toMatch(/^[1-9][0-9]{3}$/);
+      expect(pin).not.toBe('1234');
+    }
+  });
 });
+

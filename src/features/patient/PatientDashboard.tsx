@@ -20,12 +20,14 @@ import { Measurement, Patient, ProfessionalProfile } from '../../types';
 import { computeResults, round } from '../../utils/calculator';
 import { Somatochart } from '../../components/common/Somatochart';
 import { PatientTab } from '../../components/layout/BottomNav';
+import { VARIABLES } from '../../domain/variables';
 
 interface PatientDashboardProps {
   patient: Patient;
   measurements: Measurement[];
   currentTab: PatientTab;
   professional?: ProfessionalProfile;
+  initialMeasurementId?: string;
 }
 
 export const PatientDashboard: React.FC<PatientDashboardProps> = ({
@@ -33,13 +35,20 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   measurements,
   currentTab,
   professional,
+  initialMeasurementId,
 }) => {
   // Ordenar de más reciente a más antigua
   const sortedMeasurements = [...measurements].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  const [selectedMeasIndex, setSelectedMeasIndex] = useState(0);
+  const [selectedMeasIndex, setSelectedMeasIndex] = useState(() => {
+    if (initialMeasurementId) {
+      const idx = sortedMeasurements.findIndex((m) => m.id === initialMeasurementId);
+      if (idx >= 0) return idx;
+    }
+    return 0;
+  });
 
   if (sortedMeasurements.length === 0) {
     return (
@@ -79,7 +88,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     .filter(Boolean) as any[];
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-lg mx-auto pb-28 animate-fade-up">
+    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">
       {/* Encabezado con selector de consulta */}
       <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-2">
         <div className="flex items-center justify-between">
@@ -224,6 +233,47 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Tabla detallada de variables ISAK medidas */}
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Variables Antropométricas Medidas (ISAK Nivel 1)
+            </h3>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-[11px] text-slate-500">
+                    <th className="pb-2 font-semibold">Variable</th>
+                    <th className="pb-2 font-semibold text-right">Valor</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {VARIABLES.map((v) => {
+                    const finalVal = currentMeasurement.finals[v.key];
+                    if (finalVal === undefined) return null;
+
+                    return (
+                      <tr key={v.key} className="py-2 hover:bg-slate-900/40">
+                        <td className="py-1.5 text-slate-300">{v.label}</td>
+                        <td className="py-1.5 text-right font-mono font-semibold text-white">
+                          {finalVal} {v.unit}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Notas de la consulta */}
+          {currentMeasurement.notes && (
+            <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-1 text-xs">
+              <span className="font-semibold text-slate-400 block">Notas de la Consulta:</span>
+              <p className="text-slate-300 italic">{currentMeasurement.notes}</p>
+            </div>
+          )}
 
           {/* Profesional evaluador */}
           {(professional || patient.professional) && (
