@@ -47,4 +47,15 @@ Este documento registra la jerga funcional, entidades de negocio y conceptos ant
 - **Alcance / Propósito**: Actúa como única fuente de verdad autocontenida para que el paciente visualice su informe antropométrico completo en el navegador (pudiendo guardarlo en favoritos o abrirlo desde WhatsApp en cualquier momento) sin pasar por ningún servidor intermedio y asegurando que el fragmento `#` nunca sea enviado en peticiones HTTP.
 - **Lo que NO es**: No es un enlace de sincronización en vivo con una nube ni requiere importar datos en una base de datos local del paciente; cada enlace representa una instantánea autocontenida e inmutable de las mediciones incluidas al momento de generarlo.
 
+### Plantilla de Controles CSV
+- **Definición**: Archivo de texto plano delimitado por comas (`.csv`) con las cabeceras estándar del protocolo ISAK Nivel 1 y datos demográficos del paciente (`Paciente`, `Sexo`, `Fecha de Nacimiento`, `Fecha de Medición`, variables antropométricas y notas). Puede generarse de forma **genérica** (en blanco con fila de referencia) o **contextualizada** (pre-completada con la identidad de un paciente específico desde su ficha).
+- **Alcance / Propósito**: Brinda una estructura compatible con Excel y Google Sheets para registrar o migrar múltiples mediciones históricas fuera de la aplicación y luego cargarlas por lote.
+- **Lo que NO es**: No reemplaza la auditoría de tomas crudas ISAK (Toma 1, 2 y 3) del Stepper en vivo; la plantilla carga directamente los valores finales consolidados.
+
+### Importación Masiva de Controles (Batch CSV)
+- **Definición**: Proceso de carga por lote ejecutado 100% en el navegador (Zero-Backend) que interpreta un archivo CSV, valida tipos y rangos ISAK, asocia los controles a pacientes existentes por coincidencia de nombre (o crea automáticamente nuevos pacientes) y descarta controles duplicados para una misma fecha.
+- **Alcance / Propósito**: Permite a los profesionales incorporar registros históricos de múltiples visitas o pacientes en una sola operación atómica dentro de `IndexedDB`.
+- **Lo que NO es**: No sobreescribe mediciones existentes de la misma fecha ni envía datos a servidores externos.
+
+
 

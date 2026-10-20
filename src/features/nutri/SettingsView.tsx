@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import {
   Download,
   Upload,
@@ -10,6 +11,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import {
+  db,
   exportBackup,
   exportMeasurementsCSV,
   getProfessionalProfile,
@@ -19,6 +21,8 @@ import {
   saveProfessionalProfile,
 } from '../../db';
 import { ProfessionalProfile } from '../../types';
+import { CsvImportModal } from './CsvImportModal';
+import { generateCsvTemplate, downloadCsvFile } from '../../utils/csv';
 
 export const SettingsView: React.FC = () => {
   const [profile, setProfile] = useState<ProfessionalProfile>({
@@ -30,7 +34,11 @@ export const SettingsView: React.FC = () => {
   const [isPersisted, setIsPersisted] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(true);
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const patients = useLiveQuery(() => db.patients.toArray(), []);
+  const measurements = useLiveQuery(() => db.measurements.toArray(), []);
 
   useEffect(() => {
     loadSettings();
@@ -259,6 +267,27 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
 
+        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+          <button
+            onClick={() => setIsCsvModalOpen(true)}
+            className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-white transition-all text-center"
+          >
+            <Upload className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Importar CSV</span>
+          </button>
+
+          <button
+            onClick={() => {
+              const template = generateCsvTemplate();
+              downloadCsvFile(template, 'plantilla-controles-antropopopo.csv');
+            }}
+            className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-all text-center"
+          >
+            <Download className="w-4 h-4 text-indigo-400 shrink-0" />
+            <span>Plantilla CSV</span>
+          </button>
+        </div>
+
         <div>
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -309,6 +338,14 @@ export const SettingsView: React.FC = () => {
           <span>Borrar Todos los Datos Locales</span>
         </button>
       </div>
+
+      <CsvImportModal
+        isOpen={isCsvModalOpen}
+        onClose={() => setIsCsvModalOpen(false)}
+        existingPatients={patients ?? []}
+        existingMeasurements={measurements ?? []}
+        onImportSuccess={() => loadSettings()}
+      />
     </div>
   );
 };

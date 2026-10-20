@@ -170,6 +170,23 @@ export async function exportMeasurementsCSV(): Promise<string> {
 }
 
 /**
+ * Importa en lote pacientes y mediciones en una transacción atómica
+ */
+export async function importMeasurementsBatch(
+  newPatients: Patient[],
+  newMeasurements: Measurement[]
+): Promise<void> {
+  await db.transaction('rw', db.patients, db.measurements, async () => {
+    if (newPatients.length > 0) {
+      await db.patients.bulkPut(newPatients);
+    }
+    if (newMeasurements.length > 0) {
+      await db.measurements.bulkPut(newMeasurements);
+    }
+  });
+}
+
+/**
  * Importa un backup JSON
  */
 export async function importBackup(jsonString: string): Promise<{ success: boolean; message: string }> {

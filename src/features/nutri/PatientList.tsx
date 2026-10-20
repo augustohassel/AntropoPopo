@@ -12,10 +12,12 @@ import {
   Weight,
   Compass,
   History,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { db } from '../../db';
 import { Measurement, Patient } from '../../types';
 import { PatientModal } from './PatientModal';
+import { CsvImportModal } from './CsvImportModal';
 import { computeResults } from '../../utils/calculator';
 
 interface PatientListProps {
@@ -46,6 +48,7 @@ export const PatientList: React.FC<PatientListProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [expandedPatientId, setExpandedPatientId] = useState<string | null>(null);
 
   const patients = useLiveQuery(() => db.patients.toArray(), []);
@@ -68,7 +71,7 @@ export const PatientList: React.FC<PatientListProps> = ({
 
   return (
     <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto">
-      {/* Barra superior con buscador y botón crear */}
+      {/* Barra superior con buscador y botones */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -80,6 +83,14 @@ export const PatientList: React.FC<PatientListProps> = ({
             className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
           />
         </div>
+        <button
+          onClick={() => setIsCsvModalOpen(true)}
+          title="Importar controles y pacientes vía CSV"
+          className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-semibold text-xs shrink-0 transition-all"
+        >
+          <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+          <span className="hidden sm:inline">CSV</span>
+        </button>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-brand-500 text-slate-950 font-bold text-xs hover:bg-brand-400 shadow-lg shadow-brand-500/20 shrink-0 transition-all"
@@ -100,15 +111,22 @@ export const PatientList: React.FC<PatientListProps> = ({
               Cargá tu primer paciente
             </h3>
             <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-              Creá la ficha con sus datos básicos (sexo, fecha de nacimiento y perfil atlético) para iniciar su primera medición ISAK Nivel 1.
+              Creá la ficha con sus datos básicos para iniciar su primera medición ISAK, o importá un historial de controles existente vía CSV.
             </p>
-            <div className="pt-2">
+            <div className="pt-2 flex items-center justify-center gap-2">
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-500 text-slate-950 font-bold text-xs hover:bg-brand-400 shadow-lg shadow-brand-500/20 transition-all"
               >
                 <UserPlus className="w-4 h-4" />
-                <span>Crear Primer Paciente</span>
+                <span>Crear Paciente</span>
+              </button>
+              <button
+                onClick={() => setIsCsvModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-200 text-xs font-semibold transition-all"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <span>Importar CSV</span>
               </button>
             </div>
           </div>
@@ -317,6 +335,13 @@ export const PatientList: React.FC<PatientListProps> = ({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSavePatient}
+      />
+
+      <CsvImportModal
+        isOpen={isCsvModalOpen}
+        onClose={() => setIsCsvModalOpen(false)}
+        existingPatients={patients ?? []}
+        existingMeasurements={measurements ?? []}
       />
     </div>
   );
