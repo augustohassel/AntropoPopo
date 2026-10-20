@@ -10,6 +10,7 @@ import {
   Eye,
   History,
   PlusCircle,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { Measurement, Patient, ProfessionalProfile } from '../../types';
 import { computeResults } from '../../utils/calculator';
@@ -17,6 +18,7 @@ import { Somatochart } from '../../components/common/Somatochart';
 import { ShareModal } from './ShareModal';
 import { VARIABLES } from '../../domain/variables';
 import { db } from '../../db';
+import { generateCsvTemplate, downloadCsvFile } from '../../utils/csv';
 
 interface MeasurementDetailProps {
   measurement: Measurement;
@@ -95,6 +97,16 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   const chronologicalNumber =
     currentIdx >= 0 ? sortedMeasurements.length - currentIdx : 1;
 
+  const handleDownloadTemplate = () => {
+    const csv = generateCsvTemplate(patient);
+    const sanitizedName = patient.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '-');
+    downloadCsvFile(csv, `plantilla-controles-${sanitizedName}.csv`);
+  };
+
   return (
     <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">
       {/* Barra superior de navegación */}
@@ -108,6 +120,14 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
         </button>
 
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={handleDownloadTemplate}
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
+            title="Descargar plantilla CSV de controles con datos de este paciente"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Plantilla CSV</span>
+          </button>
           {onNewMeasurement && (
             <button
               onClick={onNewMeasurement}
