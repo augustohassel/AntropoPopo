@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Lock, KeyRound, CheckCircle2, AlertTriangle, Activity } from 'lucide-react';
 import { decryptPayload } from '../../utils/crypto';
 import { SharedReportPayload } from '../../types';
@@ -59,9 +60,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 backdrop-blur-sm animate-fade-up">
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         <div className="flex flex-col items-center text-center space-y-2 pb-3 border-b border-slate-800">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/25">
             <Activity className="w-6 h-6 text-white" />
@@ -115,7 +116,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
