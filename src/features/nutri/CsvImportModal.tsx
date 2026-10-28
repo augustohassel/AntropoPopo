@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Upload,
@@ -104,7 +105,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({
     downloadCsvFile(template, 'plantilla-controles-antropopopo.csv');
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-up">
       <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col max-h-[90vh]">
         {/* Cabecera del modal */}
@@ -353,7 +354,8 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
