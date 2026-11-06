@@ -3,6 +3,7 @@ import {
   validateMeasurementDate,
   validateVariableValue,
   parseInputNumber,
+  sanitizeDecimalInput,
   sanitizeTakes,
   sanitizeFinals,
   prepareUpdatedMeasurement,
@@ -100,6 +101,33 @@ describe('measurementEdit utilities', () => {
 
     it('retorna undefined para entradas alfabéticas inválidas', () => {
       expect(parseInputNumber('abc')).toBeUndefined();
+    });
+  });
+
+  describe('sanitizeDecimalInput', () => {
+    it('mantiene números enteros y decimales intactos', () => {
+      expect(sanitizeDecimalInput('72')).toBe('72');
+      expect(sanitizeDecimalInput('72.5')).toBe('72.5');
+      expect(sanitizeDecimalInput('72,5')).toBe('72,5');
+    });
+
+    it('permite el separador decimal intermedio durante el tipeo reactivo', () => {
+      expect(sanitizeDecimalInput('72.')).toBe('72.');
+      expect(sanitizeDecimalInput('72,')).toBe('72,');
+    });
+
+    it('elimina caracteres no numéricos o letras pegadas accidentalmente (caso de falla)', () => {
+      expect(sanitizeDecimalInput('abc')).toBe('');
+      expect(sanitizeDecimalInput('72a.5b')).toBe('72.5');
+      expect(sanitizeDecimalInput('  72.5  ')).toBe('72.5');
+      expect(sanitizeDecimalInput('-12')).toBe('12');
+    });
+
+    it('descarta separadores decimales adicionales manteniendo el primero (caso borde)', () => {
+      expect(sanitizeDecimalInput('72..5')).toBe('72.5');
+      expect(sanitizeDecimalInput('72.,5')).toBe('72.5');
+      expect(sanitizeDecimalInput('72,5,9')).toBe('72,59');
+      expect(sanitizeDecimalInput('72.5.9')).toBe('72.59');
     });
   });
 

@@ -27,6 +27,7 @@ import {
 import {
   parseInputNumber,
   prepareUpdatedMeasurement,
+  sanitizeDecimalInput,
   validateMeasurementDate,
   validateVariableValue,
 } from '../../utils/measurementEdit';
@@ -164,10 +165,11 @@ export const EditMeasurementModal: React.FC<EditMeasurementModalProps> = ({
     index: 0 | 1 | 2,
     value: string
   ) => {
+    const sanitized = sanitizeDecimalInput(value);
     setTakesState((prev) => {
       const current = prev[key];
       const next: [string, string, string] = [...current];
-      next[index] = value;
+      next[index] = sanitized;
       return {
         ...prev,
         [key]: next,
@@ -176,9 +178,10 @@ export const EditMeasurementModal: React.FC<EditMeasurementModalProps> = ({
   };
 
   const handleFinalChange = (key: VariableKey, value: string) => {
+    const sanitized = sanitizeDecimalInput(value);
     setFinalsState((prev) => ({
       ...prev,
-      [key]: value,
+      [key]: sanitized,
     }));
   };
 
@@ -405,6 +408,10 @@ export const EditMeasurementModal: React.FC<EditMeasurementModalProps> = ({
                         <input
                           type="text"
                           inputMode="decimal"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="none"
+                          spellCheck={false}
                           value={takesVals[0]}
                           placeholder="—"
                           onChange={(e) =>
@@ -421,6 +428,10 @@ export const EditMeasurementModal: React.FC<EditMeasurementModalProps> = ({
                         <input
                           type="text"
                           inputMode="decimal"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="none"
+                          spellCheck={false}
                           value={takesVals[1]}
                           placeholder="—"
                           onChange={(e) =>
@@ -437,6 +448,10 @@ export const EditMeasurementModal: React.FC<EditMeasurementModalProps> = ({
                         <input
                           type="text"
                           inputMode="decimal"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="none"
+                          spellCheck={false}
                           value={takesVals[2]}
                           placeholder="—"
                           onChange={(e) =>
@@ -499,6 +514,10 @@ export const EditMeasurementModal: React.FC<EditMeasurementModalProps> = ({
                     <input
                       type="text"
                       inputMode="decimal"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       value={finalVal}
                       placeholder="—"
                       onChange={(e) => handleFinalChange(v.key, e.target.value)}
