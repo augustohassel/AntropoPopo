@@ -6,7 +6,7 @@ import {
   Compass,
   Stethoscope,
 } from 'lucide-react';
-import { Measurement, Patient, ProfessionalProfile } from '../../types';
+import { Measurement, Patient, ProfessionalProfile, Somatotype } from '../../types';
 import {
   computeResults,
   sortMeasurementsChronological,
@@ -65,7 +65,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   const chronological = sortMeasurementsChronological(sortedMeasurements);
   const historicalSomatotypes = chronological
     .map((m) => computeResults(m.finals, patient, m.date).somatotype)
-    .filter(Boolean) as any[];
+    .filter(Boolean) as Somatotype[];
 
   return (
     <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">

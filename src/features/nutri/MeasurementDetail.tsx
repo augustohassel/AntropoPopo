@@ -15,8 +15,8 @@ import {
   FileText,
   LineChart,
 } from 'lucide-react';
-import { Measurement, Patient, ProfessionalProfile } from '../../types';
-import { computeResults } from '../../utils/calculator';
+import { Measurement, Patient, ProfessionalProfile, Somatotype } from '../../types';
+import { computeResults, formatMeasurementDateLabel } from '../../utils/calculator';
 import { Somatochart } from '../../components/common/Somatochart';
 import { EvolutionReport } from '../../components/common/EvolutionReport';
 import { ShareModal } from './ShareModal';
@@ -35,21 +35,6 @@ interface MeasurementDetailProps {
   onPreviewAsPatient: () => void;
   onSelectMeasurement?: (measurementId: string) => void;
   onNewMeasurement?: () => void;
-}
-
-function formatMeasurementLabel(
-  meas: Measurement,
-  allMeas: Measurement[]
-): string {
-  const sameDateCount = allMeas.filter((m) => m.date === meas.date).length;
-  if (sameDateCount > 1 && meas.createdAt) {
-    const timeStr = new Date(meas.createdAt).toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    return `${meas.date} (${timeStr})`;
-  }
-  return meas.date;
 }
 
 export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
@@ -86,7 +71,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
     )
     .reverse()
     .map((m) => computeResults(m.finals, patient, m.date).somatotype)
-    .filter(Boolean) as any[];
+    .filter(Boolean) as Somatotype[];
 
   const handleDelete = async () => {
     if (confirm('¿Estás seguro de que deseás eliminar esta medición?')) {
@@ -245,7 +230,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-white flex items-center gap-1 justify-end">
               <Calendar className="w-3 h-3 text-slate-400" />
-              {formatMeasurementLabel(measurement, sortedMeasurements)}
+              {formatMeasurementDateLabel(measurement, sortedMeasurements)}
             </span>
             <span className="text-[11px] text-slate-400 block">
               Edad: {results.ageYears} años
@@ -289,7 +274,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
                       >
                         #{num}
                       </span>
-                      <span>{formatMeasurementLabel(m, sortedMeasurements)}</span>
+                      <span>{formatMeasurementDateLabel(m, sortedMeasurements)}</span>
                     </div>
                     <div
                       className={`text-[10px] mt-0.5 ${

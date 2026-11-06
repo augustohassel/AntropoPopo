@@ -473,6 +473,24 @@ export function sortMeasurementsChronological(
 }
 
 /**
+ * Genera la etiqueta de fecha para una medición, añadiendo la hora en caso de desempate
+ */
+export function formatMeasurementDateLabel(
+  meas: Measurement,
+  allPatientMeas: Measurement[] = []
+): string {
+  const sameDateCount = allPatientMeas.filter((m) => m.date === meas.date).length;
+  if (sameDateCount > 1 && meas.createdAt) {
+    const timeStr = new Date(meas.createdAt).toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${meas.date} (${timeStr})`;
+  }
+  return meas.date;
+}
+
+/**
  * Construye los puntos de datos para la serie temporal de evolución
  */
 export function buildEvolutionData(
@@ -480,21 +498,10 @@ export function buildEvolutionData(
   patient: { sex: Sex; birthDate: string; isAthlete?: boolean; primaryFatMethod?: FatMethod }
 ): EvolutionPoint[] {
   const chronological = sortMeasurementsChronological(measurements);
-  const sameDateCounts = new Map<string, number>();
-  for (const m of chronological) {
-    sameDateCounts.set(m.date, (sameDateCounts.get(m.date) || 0) + 1);
-  }
 
   return chronological.map((m) => {
     const r = computeResults(m.finals, patient, m.date);
-    let dateLabel = m.date;
-    if ((sameDateCounts.get(m.date) || 0) > 1 && m.createdAt) {
-      const timeStr = new Date(m.createdAt).toLocaleTimeString('es-AR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-      dateLabel = `${m.date} (${timeStr})`;
-    }
+    const dateLabel = formatMeasurementDateLabel(m, chronological);
 
     return {
       date: m.date,

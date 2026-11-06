@@ -14,7 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/25">
-            <Activity className="w-4 h-4 text-white" />
+            <Activity className="w-4 h-4 text-white !text-white" />
           </div>
           <div>
             <h1 className="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
