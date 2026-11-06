@@ -83,15 +83,19 @@ jobs:
           pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" --jq '.[0] // empty | "[#\(.number)](\(.html_url)) \(.title)"')
 
           version=$(node -p "require('./package.json').version")
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::La versión debe tener formato major.minor.patch: $version"
+            exit 1
+          fi
+
           base_tag="v$version"
 
           if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$base_tag" >/dev/null 2>&1; then
-            ultimo=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$base_tag." \
-              --jq '[.[].ref | capture("\\.(?<n>[0-9]+)$").n | tonumber] | max // 0')
-            tag="$base_tag.$((ultimo + 1))"
-          else
-            tag="$base_tag"
+            echo "La release $base_tag ya existe. Incrementá major, minor o patch en package.json antes de publicar otra."
+            echo "La release $base_tag ya existe; incrementá major, minor o patch en package.json." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+          tag="$base_tag"
 
           {
             echo "### 🚀 AntropoPopo \`$tag\`"
