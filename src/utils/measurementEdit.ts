@@ -69,6 +69,30 @@ export function validateVariableValue(
 }
 
 /**
+ * Sanitiza la entrada de texto para campos numéricos decimales.
+ * Permite únicamente dígitos (0-9) y a lo sumo un separador decimal (punto o coma).
+ */
+export function sanitizeDecimalInput(raw: string): string {
+  const cleaned = raw.replace(/[^0-9.,]/g, '');
+  let separatorFound = false;
+  let result = '';
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (ch === '.' || ch === ',') {
+      if (!separatorFound) {
+        separatorFound = true;
+        result += ch;
+      }
+    } else {
+      result += ch;
+    }
+  }
+
+  return result;
+}
+
+/**
  * Parsea un string a número admitiendo coma o punto decimal
  */
 export function parseInputNumber(raw: string): number | undefined {

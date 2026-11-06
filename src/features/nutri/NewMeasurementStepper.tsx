@@ -21,6 +21,11 @@ import {
   getVariablesNeedingThirdTake,
   needsThirdTake,
 } from '../../utils/calculator';
+import {
+  parseInputNumber,
+  sanitizeDecimalInput,
+  sanitizeTakes,
+} from '../../utils/measurementEdit';
 import { db } from '../../db';
 
 interface NewMeasurementStepperProps {
@@ -43,6 +48,9 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
   );
   const [notes, setNotes] = useState('');
   const [takes, setTakes] = useState<Takes>({});
+  const [rawTakes, setRawTakes] = useState<
+    Partial<Record<VariableKey, [string, string, string]>>
+  >({});
   const [isSaving, setIsSaving] = useState(false);
 
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -72,20 +80,39 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
     takeIndex: number,
     rawVal: string
   ) => {
-    const val = rawVal === '' ? undefined : parseFloat(rawVal.replace(',', '.'));
-    const existing = takes[varKey] ?? [];
-    const nextArr = [...existing];
+    const sanitized = sanitizeDecimalInput(rawVal);
+    const num = parseInputNumber(sanitized);
 
-    if (val === undefined || isNaN(val)) {
-      nextArr[takeIndex] = undefined as unknown as number;
-    } else {
-      nextArr[takeIndex] = val;
-    }
+    setRawTakes((prev) => {
+      const existingTakes = takes[varKey] ?? [];
+      const current: [string, string, string] = prev[varKey] ?? [
+        existingTakes[0] !== undefined ? String(existingTakes[0]) : '',
+        existingTakes[1] !== undefined ? String(existingTakes[1]) : '',
+        existingTakes[2] !== undefined ? String(existingTakes[2]) : '',
+      ];
+      const next: [string, string, string] = [current[0], current[1], current[2]];
+      next[takeIndex] = sanitized;
+      return {
+        ...prev,
+        [varKey]: next,
+      };
+    });
 
-    setTakes((prev) => ({
-      ...prev,
-      [varKey]: nextArr,
-    }));
+    setTakes((prev) => {
+      const existing = prev[varKey] ?? [];
+      const nextArr = [...existing];
+
+      if (num === undefined || isNaN(num)) {
+        nextArr[takeIndex] = undefined as unknown as number;
+      } else {
+        nextArr[takeIndex] = num;
+      }
+
+      return {
+        ...prev,
+        [varKey]: nextArr,
+      };
+    });
   };
 
   const handleSwitchPass = (pass: PassNumber) => {
@@ -98,6 +125,15 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
   const t3 = currentTakes[2];
   const activeTakeIndex = currentPass - 1;
   const activeTakeValue = currentTakes[activeTakeIndex];
+  const activeTakeRawValue =
+    (currentVar && rawTakes[currentVar.key]?.[activeTakeIndex]) ??
+    (activeTakeValue !== undefined ? String(activeTakeValue) : '');
+  const t1RawValue =
+    (currentVar && rawTakes[currentVar.key]?.[0]) ??
+    (t1 !== undefined ? String(t1) : '');
+  const t2RawValue =
+    (currentVar && rawTakes[currentVar.key]?.[1]) ??
+    (t2 !== undefined ? String(t2) : '');
 
   const diffPct = calculateRelativeDiffPct(currentTakes);
   const hasExceededTolerance =
@@ -162,7 +198,8 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const finals = computeFinalsFromTakes(takes);
+      const cleanTakes = sanitizeTakes(takes);
+      const finals = computeFinalsFromTakes(cleanTakes);
       const newId = `meas-${Date.now()}`;
       const now = Date.now();
 
@@ -171,7 +208,7 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
         patientId: patient.id,
         date: measurementDate,
         protocol: 'ISAK_L1',
-        takes,
+        takes: cleanTakes,
         finals,
         notes: notes.trim(),
         formulaVersion: 1,
@@ -386,9 +423,13 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
             </label>
             <input
               ref={mainInputRef}
-              type="number"
-              step="any"
-              value={activeTakeValue ?? ''}
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={activeTakeRawValue}
               onChange={(e) =>
                 handleTakeChange(currentVar.key, activeTakeIndex, e.target.value)
               }
@@ -411,9 +452,13 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
                     Toma 1 (1ra pasada):
                   </span>
                   <input
-                    type="number"
-                    step="any"
-                    value={t1 ?? ''}
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    value={t1RawValue}
                     onChange={(e) =>
                       handleTakeChange(currentVar.key, 0, e.target.value)
                     }
@@ -465,9 +510,13 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
                   Toma 1 ({currentVar.unit})
                 </label>
                 <input
-                  type="number"
-                  step="any"
-                  value={t1 ?? ''}
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={t1RawValue}
                   onChange={(e) =>
                     handleTakeChange(currentVar.key, 0, e.target.value)
                   }
@@ -479,9 +528,13 @@ export const NewMeasurementStepper: React.FC<NewMeasurementStepperProps> = ({
                   Toma 2 ({currentVar.unit})
                 </label>
                 <input
-                  type="number"
-                  step="any"
-                  value={t2 ?? ''}
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={t2RawValue}
                   onChange={(e) =>
                     handleTakeChange(currentVar.key, 1, e.target.value)
                   }
