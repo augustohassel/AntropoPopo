@@ -15,30 +15,15 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { db } from '../../db';
-import { Measurement, Patient } from '../../types';
+import { Patient } from '../../types';
 import { PatientModal } from './PatientModal';
 import { CsvImportModal } from './CsvImportModal';
-import { computeResults } from '../../utils/calculator';
+import { computeResults, formatMeasurementDateLabel } from '../../utils/calculator';
 
 interface PatientListProps {
   onSelectPatient: (patientId: string) => void;
   onSelectMeasurement?: (patientId: string, measurementId: string) => void;
   onNewMeasurement: (patientId: string) => void;
-}
-
-function formatMeasurementLabel(
-  meas: Measurement,
-  allPatientMeas: Measurement[]
-): string {
-  const sameDateCount = allPatientMeas.filter((m) => m.date === meas.date).length;
-  if (sameDateCount > 1 && meas.createdAt) {
-    const timeStr = new Date(meas.createdAt).toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    return `${meas.date} (${timeStr})`;
-  }
-  return meas.date;
 }
 
 export const PatientList: React.FC<PatientListProps> = ({
@@ -70,7 +55,7 @@ export const PatientList: React.FC<PatientListProps> = ({
   );
 
   return (
-    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto">
+    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg md:max-w-3xl lg:max-w-4xl mx-auto">
       {/* Barra superior con buscador y botones */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
@@ -179,7 +164,7 @@ export const PatientList: React.FC<PatientListProps> = ({
                       <Calendar className="w-3 h-3 text-slate-500" />
                       {latestMeas ? (
                         <span>
-                          Última toma: {formatMeasurementLabel(latestMeas, patientMeas)}
+                          Última toma: {formatMeasurementDateLabel(latestMeas, patientMeas)}
                         </span>
                       ) : (
                         <span>Sin mediciones previas</span>
@@ -297,7 +282,7 @@ export const PatientList: React.FC<PatientListProps> = ({
                                 #{chronologicalNum}
                               </span>
                               <span className="font-mono font-semibold text-white">
-                                {formatMeasurementLabel(meas, patientMeas)}
+                                {formatMeasurementDateLabel(meas, patientMeas)}
                               </span>
                               {idx === 0 && (
                                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30">

@@ -9,6 +9,9 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   AlertTriangle,
+  Palette,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import {
   db,
@@ -23,8 +26,10 @@ import {
 import { ProfessionalProfile } from '../../types';
 import { CsvImportModal } from './CsvImportModal';
 import { generateCsvTemplate, downloadCsvFile } from '../../utils/csv';
+import { useTheme } from '../../context/ThemeContext';
 
 export const SettingsView: React.FC = () => {
+  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<ProfessionalProfile>({
     name: '',
     license: '',
@@ -147,7 +152,7 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-5 max-w-lg mx-auto animate-fade-up">
+    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-5 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto animate-fade-up">
       {statusMessage && (
         <div
           className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
@@ -160,6 +165,53 @@ export const SettingsView: React.FC = () => {
           <span>{statusMessage}</span>
         </div>
       )}
+
+      {/* Apariencia / Tema Visual */}
+      <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+        <div className="flex items-center gap-2">
+          <Palette className="w-5 h-5 text-brand-400" />
+          <div>
+            <h3 className="text-sm font-bold text-white">Apariencia Visual</h3>
+            <p className="text-[11px] text-slate-400">
+              Elegí el esquema de colores para usar la aplicación (por defecto Modo Claro).
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <button
+            type="button"
+            onClick={() => setTheme('light')}
+            className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
+              theme === 'light'
+                ? 'border-brand-500 bg-brand-500/10 text-brand-400 font-bold'
+                : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700'
+            }`}
+          >
+            <Sun className="w-4 h-4 text-amber-400" />
+            <div>
+              <span className="text-xs block text-white font-semibold">Modo Claro</span>
+              <span className="text-[10px] text-slate-400">Principal</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTheme('dark')}
+            className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
+              theme === 'dark'
+                ? 'border-brand-500 bg-brand-500/10 text-brand-400 font-bold'
+                : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700'
+            }`}
+          >
+            <Moon className="w-4 h-4 text-indigo-400" />
+            <div>
+              <span className="text-xs block text-white font-semibold">Modo Oscuro</span>
+              <span className="text-[10px] text-slate-400">Alto contraste</span>
+            </div>
+          </button>
+        </div>
+      </div>
 
       {/* Perfil del Profesional */}
       <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">

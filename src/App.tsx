@@ -214,7 +214,7 @@ export const App: React.FC = () => {
           <Header subtitle="Vista Previa · Informe del Paciente" />
 
           <div className="bg-brand-500/10 border-b border-brand-500/20 px-4 py-2">
-            <div className="max-w-lg mx-auto flex items-center justify-between">
+            <div className="max-w-6xl mx-auto flex items-center justify-between">
               <span className="text-xs font-semibold text-brand-300 flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5 text-brand-400" />
                 <span>Previsualizando vista del paciente</span>
@@ -229,7 +229,7 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          <main className="flex-1 w-full max-w-lg mx-auto">
+          <main className="flex-1 w-full max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto">
             <PatientDashboard
               patient={activePat}
               measurements={allMeas}
@@ -259,7 +259,7 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-brand-500/30 selection:text-brand-100">
       <Header subtitle="Gestión Profesional ISAK Nivel 1" />
 
-      <main className="flex-1 w-full max-w-lg mx-auto">
+      <main className="flex-1 w-full max-w-lg md:max-w-4xl lg:max-w-6xl mx-auto transition-all">
         {currentNutriTab === 'patients' && (
           <>
             {/* 1. Vista de carga guiada si está en flujo de medición */}
