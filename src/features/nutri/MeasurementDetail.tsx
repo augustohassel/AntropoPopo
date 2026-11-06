@@ -11,11 +11,13 @@ import {
   History,
   PlusCircle,
   FileSpreadsheet,
+  Pencil,
 } from 'lucide-react';
 import { Measurement, Patient, ProfessionalProfile } from '../../types';
 import { computeResults } from '../../utils/calculator';
 import { Somatochart } from '../../components/common/Somatochart';
 import { ShareModal } from './ShareModal';
+import { EditMeasurementModal } from './EditMeasurementModal';
 import { VARIABLES } from '../../domain/variables';
 import { db } from '../../db';
 import { generateCsvTemplate, downloadCsvFile } from '../../utils/csv';
@@ -59,6 +61,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   onNewMeasurement,
 }) => {
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const sortedMeasurements = [...allPatientMeasurements].sort(
@@ -145,6 +148,14 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           >
             <Eye className="w-3.5 h-3.5 text-brand-400" />
             <span>Ver como paciente</span>
+          </button>
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
+            title="Editar variables, fecha o notas de esta medición"
+          >
+            <Pencil className="w-3.5 h-3.5 text-amber-400" />
+            <span>Editar</span>
           </button>
           <button
             onClick={() => setIsShareOpen(true)}
@@ -400,9 +411,20 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
 
       {/* Tabla detallada de variables ISAK */}
       <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-          Variables Antropométricas Cargadas
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+            Variables Antropométricas Cargadas
+          </h3>
+          <button
+            type="button"
+            onClick={() => setIsEditOpen(true)}
+            className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold px-2 py-0.5 rounded-lg hover:bg-amber-400/10 transition-colors"
+            title="Editar valores de las variables"
+          >
+            <Pencil className="w-3 h-3" />
+            <span>Editar variables</span>
+          </button>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -445,6 +467,14 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           <p className="text-slate-300 italic">{measurement.notes}</p>
         </div>
       )}
+
+      {/* Modal para editar medición */}
+      <EditMeasurementModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        measurement={measurement}
+        patient={patient}
+      />
 
       {/* Modal para compartir enlace cifrado */}
       <ShareModal
