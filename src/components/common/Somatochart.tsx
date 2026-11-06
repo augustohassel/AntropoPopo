@@ -1,5 +1,6 @@
 import React from 'react';
 import { Somatotype } from '../../types';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SomatochartProps {
   current?: Somatotype;
@@ -29,6 +30,8 @@ export const Somatochart: React.FC<SomatochartProps> = ({
   size = 320,
   showLabels = true,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const currentCoords = current ? toSvgCoords(current.x, current.y) : null;
 
   return (
@@ -41,8 +44,16 @@ export const Somatochart: React.FC<SomatochartProps> = ({
           <defs>
             {/* Gradiente de fondo de la somatocarta */}
             <radialGradient id="somatoBg" cx="0%" cy="-30%" r="90%">
-              <stop offset="0%" stopColor="#0f172a" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#020617" stopOpacity="0.95" />
+              <stop
+                offset="0%"
+                stopColor={isDark ? '#0f172a' : '#ffffff'}
+                stopOpacity="0.95"
+              />
+              <stop
+                offset="100%"
+                stopColor={isDark ? '#020617' : '#f1f5f9'}
+                stopOpacity="0.95"
+              />
             </radialGradient>
 
             <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -55,25 +66,55 @@ export const Somatochart: React.FC<SomatochartProps> = ({
           <path
             d="M 0 -85 A 150 150 0 0 1 76 50 A 150 150 0 0 1 -76 50 A 150 150 0 0 1 0 -85 Z"
             fill="url(#somatoBg)"
-            stroke="#334155"
+            stroke={isDark ? '#334155' : '#cbd5e1'}
             strokeWidth="1.5"
           />
 
           {/* Sectores somatotípicos sutiles */}
           <path
             d="M 0 0 L 0 -85 M 0 0 L 76 50 M 0 0 L -76 50"
-            stroke="#1e293b"
+            stroke={isDark ? '#1e293b' : '#e2e8f0'}
             strokeWidth="1.2"
             strokeDasharray="3 3"
           />
 
           {/* Círculos concéntricos de referencia */}
-          <circle cx="0" cy="0" r="30" fill="none" stroke="#1e293b" strokeWidth="0.8" />
-          <circle cx="0" cy="0" r="60" fill="none" stroke="#1e293b" strokeWidth="0.8" />
+          <circle
+            cx="0"
+            cy="0"
+            r="30"
+            fill="none"
+            stroke={isDark ? '#1e293b' : '#e2e8f0'}
+            strokeWidth="0.8"
+          />
+          <circle
+            cx="0"
+            cy="0"
+            r="60"
+            fill="none"
+            stroke={isDark ? '#1e293b' : '#e2e8f0'}
+            strokeWidth="0.8"
+          />
 
           {/* Ejes principales X e Y */}
-          <line x1="-80" y1="0" x2="80" y2="0" stroke="#475569" strokeWidth="1" strokeDasharray="2 2" />
-          <line x1="0" y1="-85" x2="0" y2="70" stroke="#475569" strokeWidth="1" strokeDasharray="2 2" />
+          <line
+            x1="-80"
+            y1="0"
+            x2="80"
+            y2="0"
+            stroke={isDark ? '#475569' : '#94a3b8'}
+            strokeWidth="1"
+            strokeDasharray="2 2"
+          />
+          <line
+            x1="0"
+            y1="-85"
+            x2="0"
+            y2="70"
+            stroke={isDark ? '#475569' : '#94a3b8'}
+            strokeWidth="1"
+            strokeDasharray="2 2"
+          />
 
           {/* Etiquetas de los tres componentes extremos */}
           {showLabels && (

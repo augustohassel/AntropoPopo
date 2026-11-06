@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import {
+  buildEvolutionData,
+  calculateEvolutionComparison,
   calculateFinalValue,
   calculateRelativeDiffPct,
   computeResults,
   getVariablesNeedingThirdTake,
   needsThirdTake,
   siriEquation,
+  sortMeasurementsChronological,
 } from './calculator';
-import { Finals, Takes } from '../types';
+import { Finals, Measurement, Takes } from '../types';
 import { VARIABLES } from '../domain/variables';
 
 describe('Calculadora Antropométrica AntropoPopo', () => {
@@ -123,5 +126,102 @@ describe('Calculadora Antropométrica AntropoPopo', () => {
     expect(density).toBeGreaterThan(1.0);
     expect(fatPct).toBeGreaterThan(10);
     expect(fatPct).toBeLessThan(25);
+  });
+
+  describe('Historial y Evolución Temporal de Mediciones', () => {
+    const dummyPatient = {
+      sex: 'M' as const,
+      birthDate: '1990-01-01',
+      isAthlete: true,
+      primaryFatMethod: 'WITHERS' as const,
+    };
+
+    const m1: Measurement = {
+      id: 'm-1',
+      patientId: 'p-1',
+      date: '2026-01-10',
+      protocol: 'ISAK_L1',
+      formulaVersion: 1,
+      createdAt: 1000,
+      updatedAt: 1000,
+      finals: {
+        weight: 85.0,
+        height: 180.0,
+        triceps: 10,
+        subscapular: 12,
+        biceps: 5,
+        iliacCrest: 15,
+        supraspinale: 12,
+        abdominal: 18,
+        thigh: 20,
+        calf: 10,
+      },
+    };
+
+    const m2: Measurement = {
+      id: 'm-2',
+      patientId: 'p-1',
+      date: '2026-03-15',
+      protocol: 'ISAK_L1',
+      formulaVersion: 1,
+      createdAt: 2000,
+      updatedAt: 2000,
+      finals: {
+        weight: 82.0,
+        height: 180.0,
+        triceps: 8,
+        subscapular: 10,
+        biceps: 4,
+        iliacCrest: 13,
+        supraspinale: 10,
+        abdominal: 15,
+        thigh: 18,
+        calf: 9,
+      },
+    };
+
+    it('ordena mediciones cronológicamente y desempata por createdAt si coinciden en fecha', () => {
+      const mSameDateEarlier: Measurement = {
+        ...m1,
+        id: 'm-same-1',
+        date: '2026-03-15',
+        createdAt: 1500,
+      };
+      const mSameDateLater: Measurement = {
+        ...m2,
+        id: 'm-same-2',
+        date: '2026-03-15',
+        createdAt: 2500,
+      };
+
+      const sorted = sortMeasurementsChronological([mSameDateLater, m1, mSameDateEarlier]);
+      expect(sorted.map((m) => m.id)).toEqual(['m-1', 'm-same-1', 'm-same-2']);
+    });
+
+    it('construye la serie de evolución y maneja etiquetas temporales únicas', () => {
+      const evoData = buildEvolutionData([m2, m1], dummyPatient);
+      expect(evoData).toHaveLength(2);
+      expect(evoData[0].date).toBe('2026-01-10');
+      expect(evoData[0].peso).toBe(85.0);
+      expect(evoData[1].date).toBe('2026-03-15');
+      expect(evoData[1].peso).toBe(82.0);
+      expect(evoData[0].suma6).toBeGreaterThan(evoData[1].suma6!);
+    });
+
+    it('calcula comparativa primera vs última consulta', () => {
+      const evoData = buildEvolutionData([m1, m2], dummyPatient);
+      const comparison = calculateEvolutionComparison(evoData);
+
+      expect(comparison).toBeDefined();
+      expect(comparison!.firstDate).toBe('2026-01-10');
+      expect(comparison!.lastDate).toBe('2026-03-15');
+      // Peso bajó de 85 a 82 kg -> diff = -3.0
+      expect(comparison!.peso.first).toBe(85.0);
+      expect(comparison!.peso.last).toBe(82.0);
+      expect(comparison!.peso.diff).toBe(-3.0);
+
+      // Con menos de 2 mediciones devuelve undefined
+      expect(calculateEvolutionComparison([evoData[0]])).toBeUndefined();
+    });
   });
 });

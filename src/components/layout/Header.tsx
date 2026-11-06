@@ -1,17 +1,20 @@
 import React from 'react';
-import { Activity, ShieldCheck } from 'lucide-react';
+import { Activity, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 interface HeaderProps {
   subtitle?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <header className="sticky top-0 z-30 glass-panel border-b border-slate-800/80 px-4 py-3 sm:px-6">
-      <div className="max-w-lg mx-auto flex items-center justify-between">
+      <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/25">
-            <Activity className="w-4 h-4 text-white" />
+            <Activity className="w-4 h-4 text-white !text-white" />
           </div>
           <div>
             <h1 className="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
@@ -29,6 +32,21 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Botón de alternancia Modo Claro / Oscuro */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-1.5 rounded-xl border border-slate-700/60 bg-slate-800/80 text-slate-300 hover:text-brand-400 transition-colors shadow-sm"
+            title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+            aria-label="Alternar tema claro/oscuro"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+
           <div className="hidden xs:flex items-center gap-1 text-[10px] text-emerald-400/90 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
             <ShieldCheck className="w-3 h-3" />
             <span>Privado</span>
