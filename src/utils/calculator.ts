@@ -2,6 +2,7 @@ import {
   FatMethod,
   FatResult,
   Finals,
+  Measurement,
   MeasurementResults,
   Sex,
   Somatotype,
@@ -430,5 +431,107 @@ export function computeResults(
     correctedCalf,
     somatotype,
     warnings,
+  };
+}
+
+export interface EvolutionPoint {
+  date: string;
+  dateLabel: string;
+  peso?: number;
+  grasaPct?: number;
+  grasaKg?: number;
+  magraKg?: number;
+  suma6?: number;
+  imc?: number;
+}
+
+export interface MetricComparison {
+  first?: number;
+  last?: number;
+  diff?: number;
+}
+
+export interface EvolutionSummary {
+  firstDate: string;
+  lastDate: string;
+  peso: MetricComparison;
+  grasaPct: MetricComparison;
+  suma6: MetricComparison;
+}
+
+/**
+ * Ordena mediciones en orden cronológico ascendente (por fecha y desempate por createdAt)
+ */
+export function sortMeasurementsChronological(
+  measurements: Measurement[]
+): Measurement[] {
+  return [...measurements].sort(
+    (a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime() ||
+      (a.createdAt ?? 0) - (b.createdAt ?? 0)
+  );
+}
+
+/**
+ * Construye los puntos de datos para la serie temporal de evolución
+ */
+export function buildEvolutionData(
+  measurements: Measurement[],
+  patient: { sex: Sex; birthDate: string; isAthlete?: boolean; primaryFatMethod?: FatMethod }
+): EvolutionPoint[] {
+  const chronological = sortMeasurementsChronological(measurements);
+  const sameDateCounts = new Map<string, number>();
+  for (const m of chronological) {
+    sameDateCounts.set(m.date, (sameDateCounts.get(m.date) || 0) + 1);
+  }
+
+  return chronological.map((m) => {
+    const r = computeResults(m.finals, patient, m.date);
+    let dateLabel = m.date;
+    if ((sameDateCounts.get(m.date) || 0) > 1 && m.createdAt) {
+      const timeStr = new Date(m.createdAt).toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      dateLabel = `${m.date} (${timeStr})`;
+    }
+
+    return {
+      date: m.date,
+      dateLabel,
+      peso: r.weight,
+      grasaPct: r.primaryFat?.fatPct,
+      grasaKg: r.primaryFat?.fatKg,
+      magraKg: r.primaryFat?.leanKg,
+      suma6: r.sum6,
+      imc: r.bmi,
+    };
+  });
+}
+
+/**
+ * Calcula la comparativa entre la primera y la última medición de la serie
+ */
+export function calculateEvolutionComparison(
+  evolutionData: EvolutionPoint[]
+): EvolutionSummary | undefined {
+  if (evolutionData.length < 2) return undefined;
+  const first = evolutionData[0];
+  const last = evolutionData[evolutionData.length - 1];
+
+  const calcDiff = (lastVal?: number, firstVal?: number): MetricComparison => {
+    const diff =
+      lastVal !== undefined && firstVal !== undefined
+        ? round(lastVal - firstVal, 1)
+        : undefined;
+    return { first: firstVal, last: lastVal, diff };
+  };
+
+  return {
+    firstDate: first.dateLabel || first.date,
+    lastDate: last.dateLabel || last.date,
+    peso: calcDiff(last.peso, first.peso),
+    grasaPct: calcDiff(last.grasaPct, first.grasaPct),
+    suma6: calcDiff(last.suma6, first.suma6),
   };
 }

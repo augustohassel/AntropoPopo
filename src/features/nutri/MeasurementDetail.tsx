@@ -12,10 +12,13 @@ import {
   PlusCircle,
   FileSpreadsheet,
   Pencil,
+  FileText,
+  LineChart,
 } from 'lucide-react';
 import { Measurement, Patient, ProfessionalProfile } from '../../types';
 import { computeResults } from '../../utils/calculator';
 import { Somatochart } from '../../components/common/Somatochart';
+import { EvolutionReport } from '../../components/common/EvolutionReport';
 import { ShareModal } from './ShareModal';
 import { EditMeasurementModal } from './EditMeasurementModal';
 import { VARIABLES } from '../../domain/variables';
@@ -63,6 +66,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<'detail' | 'evolution'>('detail');
 
   const sortedMeasurements = [...allPatientMeasurements].sort(
     (a, b) =>
@@ -175,8 +179,61 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
         </div>
       </div>
 
-      {/* Encabezado del informe con selector de historial */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+      {/* Selector de Vista: Detalle vs Evolución */}
+      <div className="grid grid-cols-2 p-1 bg-slate-900/90 rounded-2xl border border-slate-800">
+        <button
+          type="button"
+          onClick={() => setViewMode('detail')}
+          className={`py-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            viewMode === 'detail'
+              ? 'bg-slate-800 text-white shadow-sm border border-slate-700/60 font-bold'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5 text-brand-400" />
+          <span>Detalle</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('evolution')}
+          className={`py-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            viewMode === 'evolution'
+              ? 'bg-brand-500 text-slate-950 font-bold shadow-md shadow-brand-500/20'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <LineChart className="w-3.5 h-3.5" />
+          <span>Evolución</span>
+        </button>
+      </div>
+
+      {viewMode === 'evolution' ? (
+        <div className="space-y-4">
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400">
+                Historial y Evolución · {allPatientMeasurements.length}{' '}
+                {allPatientMeasurements.length === 1 ? 'consulta' : 'consultas'}
+              </span>
+              <h2 className="text-xl font-bold text-white">{patient.name}</h2>
+            </div>
+            {professional && (
+              <span className="text-[11px] text-slate-400">
+                Nutri: <strong className="text-slate-300">{professional.name}</strong>
+              </span>
+            )}
+          </div>
+
+          <EvolutionReport
+            measurements={allPatientMeasurements}
+            patient={patient}
+            onNewMeasurement={onNewMeasurement}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Encabezado del informe con selector de historial */}
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-brand-400">
@@ -466,6 +523,8 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           <span className="font-semibold text-slate-400 block">Notas de la Consulta:</span>
           <p className="text-slate-300 italic">{measurement.notes}</p>
         </div>
+      )}
+        </>
       )}
 
       {/* Modal para editar medición */}

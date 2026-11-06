@@ -2,23 +2,17 @@ import React, { useState } from 'react';
 import {
   Weight,
   Flame,
-  Activity,
   Calendar,
   Compass,
   Stethoscope,
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from 'recharts';
 import { Measurement, Patient, ProfessionalProfile } from '../../types';
-import { computeResults, round } from '../../utils/calculator';
+import {
+  computeResults,
+  sortMeasurementsChronological,
+} from '../../utils/calculator';
 import { Somatochart } from '../../components/common/Somatochart';
+import { EvolutionReport } from '../../components/common/EvolutionReport';
 import { PatientTab } from '../../components/layout/BottomNav';
 import { VARIABLES } from '../../domain/variables';
 
@@ -67,22 +61,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     currentMeasurement.date
   );
 
-  // Datos para gráficos de evolución (orden cronológico ascendente)
-  const chronological = [...sortedMeasurements].reverse();
-  const evolutionData = chronological.map((m) => {
-    const r = computeResults(m.finals, patient, m.date);
-    return {
-      date: m.date,
-      peso: r.weight,
-      grasaPct: r.primaryFat?.fatPct,
-      grasaKg: r.primaryFat?.fatKg,
-      magraKg: r.primaryFat?.leanKg,
-      suma6: r.sum6,
-      imc: r.bmi,
-    };
-  });
-
-  // Trayectoria histórica somatocarta
+  // Trayectoria histórica somatocarta (orden cronológico ascendente)
+  const chronological = sortMeasurementsChronological(sortedMeasurements);
   const historicalSomatotypes = chronological
     .map((m) => computeResults(m.finals, patient, m.date).somatotype)
     .filter(Boolean) as any[];
@@ -361,227 +341,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
       {/* ──────────────── TAB 3: EVOLUCIÓN TEMPORAL ──────────────── */}
       {currentTab === 'evolution' && (
-        <div className="space-y-4">
-          {evolutionData.length < 2 ? (
-            <div className="glass-panel p-6 rounded-2xl border border-slate-800 text-center space-y-2">
-              <Activity className="w-8 h-8 text-brand-400 mx-auto" />
-              <p className="text-sm font-semibold text-white">
-                Se requiere más de una medición para ver gráficos de evolución.
-              </p>
-              <p className="text-xs text-slate-400">
-                Cuando tu nutricionista te envíe nuevas consultas, vas a poder comparar tus cambios acá.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Gráfico de Peso Corporal */}
-              <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Evolución del Peso Corporal (kg)
-                </h3>
-                <div className="h-52 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={evolutionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="date" stroke="#64748b" fontSize={10} />
-                      <YAxis domain={['auto', 'auto']} stroke="#64748b" fontSize={10} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#0f172a',
-                          border: '1px solid #334155',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="peso"
-                        name="Peso (kg)"
-                        stroke="#06c4ae"
-                        strokeWidth={2.5}
-                        dot={{ r: 4, fill: '#06c4ae' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Gráfico de % Graso */}
-              <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Evolución del % Graso
-                </h3>
-                <div className="h-52 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={evolutionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="date" stroke="#64748b" fontSize={10} />
-                      <YAxis domain={['auto', 'auto']} stroke="#64748b" fontSize={10} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#0f172a',
-                          border: '1px solid #334155',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="grasaPct"
-                        name="% Grasa"
-                        stroke="#f43f5e"
-                        strokeWidth={2.5}
-                        dot={{ r: 4, fill: '#f43f5e' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Gráfico de Suma 6 Pliegues */}
-              <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Evolución Suma 6 Pliegues (mm)
-                </h3>
-                <div className="h-52 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={evolutionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="date" stroke="#64748b" fontSize={10} />
-                      <YAxis domain={['auto', 'auto']} stroke="#64748b" fontSize={10} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#0f172a',
-                          border: '1px solid #334155',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="suma6"
-                        name="Suma 6 (mm)"
-                        stroke="#a855f7"
-                        strokeWidth={2.5}
-                        dot={{ r: 4, fill: '#a855f7' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Tabla Comparativa entre Primera y Última consulta */}
-              {evolutionData.length >= 2 && (
-                <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3 text-xs">
-                  <h4 className="font-bold text-white uppercase tracking-wider text-[11px]">
-                    Comparativa: Primera vs Última Consulta
-                  </h4>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b border-slate-800 text-[10px] text-slate-500">
-                          <th className="pb-1.5 font-semibold">Métrica</th>
-                          <th className="pb-1.5 font-semibold text-center">{evolutionData[0].date}</th>
-                          <th className="pb-1.5 font-semibold text-center">
-                            {evolutionData[evolutionData.length - 1].date}
-                          </th>
-                          <th className="pb-1.5 font-semibold text-right">Diferencia</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800/50 font-mono">
-                        {/* Peso */}
-                        <tr>
-                          <td className="py-2 text-slate-300 font-sans">Peso (kg)</td>
-                          <td className="py-2 text-center text-slate-400">{evolutionData[0].peso}</td>
-                          <td className="py-2 text-center text-white font-bold">
-                            {evolutionData[evolutionData.length - 1].peso}
-                          </td>
-                          <td className="py-2 text-right">
-                            {(() => {
-                              const diff = round(
-                                (evolutionData[evolutionData.length - 1].peso ?? 0) -
-                                  (evolutionData[0].peso ?? 0),
-                                1
-                              );
-                              return (
-                                <span
-                                  className={
-                                    diff <= 0 ? 'text-emerald-400' : 'text-slate-300'
-                                  }
-                                >
-                                  {diff > 0 ? `+${diff}` : diff} kg
-                                </span>
-                              );
-                            })()}
-                          </td>
-                        </tr>
-
-                        {/* % Grasa */}
-                        <tr>
-                          <td className="py-2 text-slate-300 font-sans">% Grasa</td>
-                          <td className="py-2 text-center text-slate-400">
-                            {evolutionData[0].grasaPct}%
-                          </td>
-                          <td className="py-2 text-center text-rose-400 font-bold">
-                            {evolutionData[evolutionData.length - 1].grasaPct}%
-                          </td>
-                          <td className="py-2 text-right">
-                            {(() => {
-                              const diff = round(
-                                (evolutionData[evolutionData.length - 1].grasaPct ?? 0) -
-                                  (evolutionData[0].grasaPct ?? 0),
-                                1
-                              );
-                              return (
-                                <span
-                                  className={
-                                    diff <= 0 ? 'text-emerald-400' : 'text-rose-400'
-                                  }
-                                >
-                                  {diff > 0 ? `+${diff}` : diff}%
-                                </span>
-                              );
-                            })()}
-                          </td>
-                        </tr>
-
-                        {/* Suma 6 */}
-                        <tr>
-                          <td className="py-2 text-slate-300 font-sans">Suma 6 (mm)</td>
-                          <td className="py-2 text-center text-slate-400">
-                            {evolutionData[0].suma6}
-                          </td>
-                          <td className="py-2 text-center text-purple-400 font-bold">
-                            {evolutionData[evolutionData.length - 1].suma6}
-                          </td>
-                          <td className="py-2 text-right">
-                            {(() => {
-                              const diff = round(
-                                (evolutionData[evolutionData.length - 1].suma6 ?? 0) -
-                                  (evolutionData[0].suma6 ?? 0),
-                                1
-                              );
-                              return (
-                                <span
-                                  className={
-                                    diff <= 0 ? 'text-emerald-400' : 'text-purple-400'
-                                  }
-                                >
-                                  {diff > 0 ? `+${diff}` : diff} mm
-                                </span>
-                              );
-                            })()}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <EvolutionReport
+          measurements={sortedMeasurements}
+          patient={patient}
+          emptyStateDescription="Cuando tu nutricionista te envíe nuevas consultas, vas a poder comparar tus cambios acá."
+        />
       )}
     </div>
   );
