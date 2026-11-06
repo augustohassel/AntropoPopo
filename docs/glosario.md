@@ -57,5 +57,11 @@ Este documento registra la jerga funcional, entidades de negocio y conceptos ant
 - **Alcance / Propósito**: Permite a los profesionales incorporar registros históricos de múltiples visitas o pacientes en una sola operación atómica dentro de `IndexedDB`.
 - **Lo que NO es**: No sobreescribe mediciones existentes de la misma fecha ni envía datos a servidores externos.
 
+### Edición de Mediciones Antropométricas
+- **Definición**: Capacidad del profesional evaluador para corregir o ajustar los valores de variables, fecha o notas de una medición existente almacenada en `IndexedDB`. Si la medición fue registrada originalmente mediante el Stepper en vivo, la edición opera sobre las tomas crudas (T1, T2, T3) recalculando automáticamente los valores finales (`finals`) según el protocolo ISAK; si fue importada vía CSV, permite editar directamente los valores finales.
+- **Alcance / Propósito**: Permite enmendar errores de tipeo o corregir fechas sin tener que eliminar y recargar la consulta completa, manteniendo intacta la consistencia de rangos ISAK (`min`/`max`), cronología de nacimiento y actualización reactiva de la somatocarta y métricas corporales.
+- **Lo que NO es**: No está disponible en la vista web efímera del paciente (`#import=...`), la cual permanece estrictamente en solo lectura.
+
+
 
 
