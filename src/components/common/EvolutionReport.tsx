@@ -14,6 +14,7 @@ import {
   buildEvolutionData,
   calculateEvolutionComparison,
 } from '../../utils/calculator';
+import { useTheme } from '../../context/ThemeContext';
 
 export interface EvolutionReportProps {
   measurements: Measurement[];
@@ -28,6 +29,9 @@ export const EvolutionReport: React.FC<EvolutionReportProps> = ({
   onNewMeasurement,
   emptyStateDescription,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const evolutionData = useMemo(
     () => buildEvolutionData(measurements, patient),
     [measurements, patient]
@@ -37,6 +41,17 @@ export const EvolutionReport: React.FC<EvolutionReportProps> = ({
     () => calculateEvolutionComparison(evolutionData),
     [evolutionData]
   );
+
+  const gridStroke = isDark ? '#1e293b' : '#e2e8f0';
+  const axisStroke = isDark ? '#64748b' : '#94a3b8';
+  const tooltipStyle = {
+    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+    border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+    borderRadius: '12px',
+    fontSize: '11px',
+    color: isDark ? '#ffffff' : '#0f172a',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
+  };
 
   if (evolutionData.length < 2) {
     return (
@@ -67,99 +82,81 @@ export const EvolutionReport: React.FC<EvolutionReportProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Gráfico de Peso Corporal */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-          Evolución del Peso Corporal (kg)
-        </h3>
-        <div className="h-52 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={evolutionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="dateLabel" stroke="#64748b" fontSize={10} />
-              <YAxis domain={['auto', 'auto']} stroke="#64748b" fontSize={10} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="peso"
-                name="Peso (kg)"
-                stroke="#06c4ae"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: '#06c4ae' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Grilla responsive para pantallas medianas/grandes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Gráfico de Peso Corporal */}
+        <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            Evolución del Peso Corporal (kg)
+          </h3>
+          <div className="h-52 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={evolutionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="dateLabel" stroke={axisStroke} fontSize={10} />
+                <YAxis domain={['auto', 'auto']} stroke={axisStroke} fontSize={10} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="peso"
+                  name="Peso (kg)"
+                  stroke="#06c4ae"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#06c4ae' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
 
-      {/* Gráfico de % Graso */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-          Evolución del % Graso
-        </h3>
-        <div className="h-52 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={evolutionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="dateLabel" stroke="#64748b" fontSize={10} />
-              <YAxis domain={['auto', 'auto']} stroke="#64748b" fontSize={10} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="grasaPct"
-                name="% Grasa"
-                stroke="#f43f5e"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: '#f43f5e' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* Gráfico de % Graso */}
+        <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            Evolución del % Graso
+          </h3>
+          <div className="h-52 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={evolutionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="dateLabel" stroke={axisStroke} fontSize={10} />
+                <YAxis domain={['auto', 'auto']} stroke={axisStroke} fontSize={10} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="grasaPct"
+                  name="% Grasa"
+                  stroke="#f43f5e"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#f43f5e' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
 
-      {/* Gráfico de Suma 6 Pliegues */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-          Evolución Suma 6 Pliegues (mm)
-        </h3>
-        <div className="h-52 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={evolutionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="dateLabel" stroke="#64748b" fontSize={10} />
-              <YAxis domain={['auto', 'auto']} stroke="#64748b" fontSize={10} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="suma6"
-                name="Suma 6 (mm)"
-                stroke="#a855f7"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: '#a855f7' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* Gráfico de Suma 6 Pliegues */}
+        <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3 lg:col-span-2">
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            Evolución Suma 6 Pliegues (mm)
+          </h3>
+          <div className="h-52 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={evolutionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="dateLabel" stroke={axisStroke} fontSize={10} />
+                <YAxis domain={['auto', 'auto']} stroke={axisStroke} fontSize={10} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="suma6"
+                  name="Suma 6 (mm)"
+                  stroke="#a855f7"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#a855f7' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -279,4 +276,3 @@ export const EvolutionReport: React.FC<EvolutionReportProps> = ({
     </div>
   );
 };
-

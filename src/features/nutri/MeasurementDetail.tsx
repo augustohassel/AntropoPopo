@@ -115,55 +115,55 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
   };
 
   return (
-    <div className="px-4 pt-4 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 max-w-lg mx-auto animate-fade-up">
+    <div className="px-3 pt-3 pb-32 sm:px-6 sm:pt-6 sm:pb-32 space-y-4 w-full animate-fade-up">
       {/* Barra superior de navegación */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 overflow-x-auto scrollbar-none py-1">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-colors shrink-0"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-colors shrink-0 whitespace-nowrap"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Pacientes</span>
         </button>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={handleDownloadTemplate}
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all whitespace-nowrap shrink-0"
             title="Descargar plantilla CSV de controles con datos de este paciente"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Plantilla CSV</span>
+            <span className="hidden md:inline">Plantilla CSV</span>
           </button>
           {onNewMeasurement && (
             <button
               onClick={onNewMeasurement}
-              className="flex items-center gap-1 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-brand-300 font-semibold text-xs hover:bg-slate-700 hover:text-brand-200 transition-all"
+              className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-brand-300 font-semibold text-xs hover:bg-slate-700 hover:text-brand-200 transition-all whitespace-nowrap shrink-0"
               title="Cargar una nueva medición para este paciente"
             >
               <PlusCircle className="w-3.5 h-3.5 text-brand-400" />
-              <span className="hidden sm:inline">Nueva</span>
+              <span className="hidden md:inline">Nueva</span>
             </button>
           )}
           <button
             onClick={onPreviewAsPatient}
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all whitespace-nowrap shrink-0"
             title="Previsualizar cómo verá el informe el paciente"
           >
             <Eye className="w-3.5 h-3.5 text-brand-400" />
-            <span>Ver como paciente</span>
+            <span className="hidden md:inline">Ver como paciente</span>
           </button>
           <button
             onClick={() => setIsEditOpen(true)}
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-200 font-semibold text-xs hover:bg-slate-700 hover:text-white transition-all whitespace-nowrap shrink-0"
             title="Editar variables, fecha o notas de esta medición"
           >
             <Pencil className="w-3.5 h-3.5 text-amber-400" />
-            <span>Editar</span>
+            <span className="hidden md:inline">Editar</span>
           </button>
           <button
             onClick={() => setIsShareOpen(true)}
-            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-brand-500 text-slate-950 font-bold text-xs hover:bg-brand-400 shadow-lg shadow-brand-500/20 transition-all"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-brand-500 text-slate-950 font-bold text-xs hover:bg-brand-400 shadow-md shadow-brand-500/20 transition-all whitespace-nowrap shrink-0"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Compartir</span>
@@ -171,7 +171,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-1.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="p-1.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
             title="Eliminar medición"
           >
             <Trash2 className="w-4 h-4" />
@@ -180,7 +180,7 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
       </div>
 
       {/* Selector de Vista: Detalle vs Evolución */}
-      <div className="grid grid-cols-2 p-1 bg-slate-900/90 rounded-2xl border border-slate-800">
+      <div className="grid grid-cols-2 p-1 bg-slate-900/90 rounded-2xl border border-slate-800 max-w-md mx-auto sm:max-w-none">
         <button
           type="button"
           onClick={() => setViewMode('detail')}
@@ -319,211 +319,220 @@ export const MeasurementDetail: React.FC<MeasurementDetailProps> = ({
         )}
       </div>
 
-      {/* Métricas destacadas en tarjetas */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 space-y-1">
-          <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-            <Weight className="w-3.5 h-3.5 text-brand-400" /> Peso Corporal
-          </span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold font-mono text-white">
-              {results.weight ?? '—'}
-            </span>
-            <span className="text-xs text-slate-400 font-semibold">kg</span>
-          </div>
-          <span className="text-[11px] text-slate-500 block">
-            Talla: {results.height} cm · IMC: {results.bmi ?? '—'}
-          </span>
-        </div>
+      {/* Grilla responsive desktop a 2 columnas */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Columna Izquierda (5/12 en desktop): Métricas, Somatocarta y Composición */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* Métricas destacadas en tarjetas */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                <Weight className="w-3.5 h-3.5 text-brand-400" /> Peso Corporal
+              </span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold font-mono text-white">
+                  {results.weight ?? '—'}
+                </span>
+                <span className="text-xs text-slate-400 font-semibold">kg</span>
+              </div>
+              <span className="text-[11px] text-slate-500 block">
+                Talla: {results.height} cm · IMC: {results.bmi ?? '—'}
+              </span>
+            </div>
 
-        <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 space-y-1">
-          <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5 text-rose-400" /> % Graso ({results.primaryFat?.method})
-          </span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold font-mono text-rose-400">
-              {results.primaryFat?.fatPct ?? '—'}
-            </span>
-            <span className="text-xs text-rose-400/80 font-semibold">%</span>
+            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-rose-400" /> % Graso ({results.primaryFat?.method})
+              </span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold font-mono text-rose-400">
+                  {results.primaryFat?.fatPct ?? '—'}
+                </span>
+                <span className="text-xs text-rose-400/80 font-semibold">%</span>
+              </div>
+              <span className="text-[11px] text-slate-500 block">
+                Grasa: {results.primaryFat?.fatKg} kg · Magra: {results.primaryFat?.leanKg} kg
+              </span>
+            </div>
           </div>
-          <span className="text-[11px] text-slate-500 block">
-            Grasa: {results.primaryFat?.fatKg} kg · Magra: {results.primaryFat?.leanKg} kg
-          </span>
-        </div>
-      </div>
 
-      {/* Somatotipo de Heath & Carter y Somatocarta */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Compass className="w-4 h-4 text-brand-400" />
-            <h3 className="text-sm font-bold text-white">
-              Somatotipo de Heath & Carter (1990)
+          {/* Somatotipo de Heath & Carter y Somatocarta */}
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-brand-400" />
+                <h3 className="text-sm font-bold text-white">
+                  Somatotipo de Heath & Carter (1990)
+                </h3>
+              </div>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-brand-300">
+                {results.somatotype?.category ?? 'Central'}
+              </span>
+            </div>
+
+            <Somatochart
+              current={results.somatotype}
+              previous={previousSomatotypes}
+              size={300}
+            />
+          </div>
+
+          {/* Comparativa de Métodos y Composición Corporal */}
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Composición Corporal e Índices
             </h3>
-          </div>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-brand-300">
-            {results.somatotype?.category ?? 'Central'}
-          </span>
-        </div>
 
-        <Somatochart
-          current={results.somatotype}
-          previous={previousSomatotypes}
-          size={300}
-        />
-      </div>
+            <div className="space-y-2 text-xs">
+              {/* Withers */}
+              {results.withers && (
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 space-y-1">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-white">Withers et al. (1987) — Atletas</span>
+                    <span className="text-brand-400 font-mono font-bold">
+                      {results.withers.fatPct}%
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 text-[11px] text-slate-400 pt-1">
+                    <div>
+                      <span className="block text-slate-500">Grasa</span>
+                      <span className="font-mono text-slate-200">{results.withers.fatKg} kg</span>
+                    </div>
+                    <div>
+                      <span className="block text-slate-500">Magra</span>
+                      <span className="font-mono text-slate-200">{results.withers.leanKg} kg</span>
+                    </div>
+                    <div>
+                      <span className="block text-slate-500">FMI</span>
+                      <span className="font-mono text-slate-200">{results.withers.fmi}</span>
+                    </div>
+                    <div>
+                      <span className="block text-slate-500">FFMI</span>
+                      <span className="font-mono text-slate-200">{results.withers.ffmi}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-      {/* Comparativa de Métodos y Composición Corporal */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-          Composición Corporal e Índices
-        </h3>
+              {/* Durnin & Womersley */}
+              {results.dw && (
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 space-y-1">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-white">Durnin & Womersley (1974)</span>
+                    <span className="text-sky-400 font-mono font-bold">
+                      {results.dw.fatPct}%
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 text-[11px] text-slate-400 pt-1">
+                    <div>
+                      <span className="block text-slate-500">Grasa</span>
+                      <span className="font-mono text-slate-200">{results.dw.fatKg} kg</span>
+                    </div>
+                    <div>
+                      <span className="block text-slate-500">Magra</span>
+                      <span className="font-mono text-slate-200">{results.dw.leanKg} kg</span>
+                    </div>
+                    <div>
+                      <span className="block text-slate-500">FMI</span>
+                      <span className="font-mono text-slate-200">{results.dw.fmi}</span>
+                    </div>
+                    <div>
+                      <span className="block text-slate-500">FFMI</span>
+                      <span className="font-mono text-slate-200">{results.dw.ffmi}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-        <div className="space-y-2 text-xs">
-          {/* Withers */}
-          {results.withers && (
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 space-y-1">
-              <div className="flex items-center justify-between font-semibold">
-                <span className="text-white">Withers et al. (1987) — Atletas</span>
-                <span className="text-brand-400 font-mono font-bold">
-                  {results.withers.fatPct}%
-                </span>
+              {/* Otros índices */}
+              <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                  <span className="text-slate-500 block">Suma 6 Pliegues</span>
+                  <span className="font-mono font-bold text-white text-xs">
+                    {results.sum6 ? `${results.sum6} mm` : '—'}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                  <span className="text-slate-500 block">Índice Cint/Cad</span>
+                  <span className="font-mono font-bold text-white text-xs">
+                    {results.waistHipRatio ?? '—'}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                  <span className="text-slate-500 block">Área Musc. Brazo</span>
+                  <span className="font-mono font-bold text-white text-xs">
+                    {results.armMuscleArea ? `${results.armMuscleArea} cm²` : '—'}
+                  </span>
+                </div>
               </div>
-              <div className="grid grid-cols-4 gap-1 text-[11px] text-slate-400 pt-1">
-                <div>
-                  <span className="block text-slate-500">Grasa</span>
-                  <span className="font-mono text-slate-200">{results.withers.fatKg} kg</span>
-                </div>
-                <div>
-                  <span className="block text-slate-500">Magra</span>
-                  <span className="font-mono text-slate-200">{results.withers.leanKg} kg</span>
-                </div>
-                <div>
-                  <span className="block text-slate-500">FMI</span>
-                  <span className="font-mono text-slate-200">{results.withers.fmi}</span>
-                </div>
-                <div>
-                  <span className="block text-slate-500">FFMI</span>
-                  <span className="font-mono text-slate-200">{results.withers.ffmi}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Durnin & Womersley */}
-          {results.dw && (
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 space-y-1">
-              <div className="flex items-center justify-between font-semibold">
-                <span className="text-white">Durnin & Womersley (1974)</span>
-                <span className="text-sky-400 font-mono font-bold">
-                  {results.dw.fatPct}%
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-1 text-[11px] text-slate-400 pt-1">
-                <div>
-                  <span className="block text-slate-500">Grasa</span>
-                  <span className="font-mono text-slate-200">{results.dw.fatKg} kg</span>
-                </div>
-                <div>
-                  <span className="block text-slate-500">Magra</span>
-                  <span className="font-mono text-slate-200">{results.dw.leanKg} kg</span>
-                </div>
-                <div>
-                  <span className="block text-slate-500">FMI</span>
-                  <span className="font-mono text-slate-200">{results.dw.fmi}</span>
-                </div>
-                <div>
-                  <span className="block text-slate-500">FFMI</span>
-                  <span className="font-mono text-slate-200">{results.dw.ffmi}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Otros índices */}
-          <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-slate-500 block">Suma 6 Pliegues</span>
-              <span className="font-mono font-bold text-white text-xs">
-                {results.sum6 ? `${results.sum6} mm` : '—'}
-              </span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-slate-500 block">Índice Cint/Cad</span>
-              <span className="font-mono font-bold text-white text-xs">
-                {results.waistHipRatio ?? '—'}
-              </span>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-slate-500 block">Área Musc. Brazo</span>
-              <span className="font-mono font-bold text-white text-xs">
-                {results.armMuscleArea ? `${results.armMuscleArea} cm²` : '—'}
-              </span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Tabla detallada de variables ISAK */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Variables Antropométricas Cargadas
-          </h3>
-          <button
-            type="button"
-            onClick={() => setIsEditOpen(true)}
-            className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold px-2 py-0.5 rounded-lg hover:bg-amber-400/10 transition-colors"
-            title="Editar valores de las variables"
-          >
-            <Pencil className="w-3 h-3" />
-            <span>Editar variables</span>
-          </button>
-        </div>
+        {/* Columna Derecha (7/12 en desktop): Variables ISAK completas y Notas */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Tabla detallada de variables ISAK */}
+          <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Variables Antropométricas Cargadas
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEditOpen(true)}
+                className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-semibold px-2 py-0.5 rounded-lg hover:bg-amber-400/10 transition-colors"
+                title="Editar valores de las variables"
+              >
+                <Pencil className="w-3 h-3" />
+                <span>Editar variables</span>
+              </button>
+            </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-800 text-[11px] text-slate-500">
-                <th className="pb-2 font-semibold">Variable</th>
-                <th className="pb-2 font-semibold text-right">Tomas (T1 / T2 / T3)</th>
-                <th className="pb-2 font-semibold text-right">Valor Final</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {VARIABLES.map((v) => {
-                const finalVal = measurement.finals[v.key];
-                if (finalVal === undefined) return null;
-
-                const rawTakes = (measurement.takes?.[v.key] ?? []).filter(
-                  (t): t is number => typeof t === 'number' && !isNaN(t) && t > 0
-                );
-
-                return (
-                  <tr key={v.key} className="py-2 hover:bg-slate-900/40">
-                    <td className="py-1.5 text-slate-300">{v.label}</td>
-                    <td className="py-1.5 text-right font-mono text-[11px] text-slate-400">
-                      {rawTakes.length > 0 ? rawTakes.join(' / ') : '—'}
-                    </td>
-                    <td className="py-1.5 text-right font-mono font-semibold text-white">
-                      {finalVal} {v.unit}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-[11px] text-slate-500">
+                    <th className="pb-2 font-semibold">Variable</th>
+                    <th className="pb-2 font-semibold text-right">Tomas (T1 / T2 / T3)</th>
+                    <th className="pb-2 font-semibold text-right">Valor Final</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {VARIABLES.map((v) => {
+                    const finalVal = measurement.finals[v.key];
+                    if (finalVal === undefined) return null;
+
+                    const rawTakes = (measurement.takes?.[v.key] ?? []).filter(
+                      (t): t is number => typeof t === 'number' && !isNaN(t) && t > 0
+                    );
+
+                    return (
+                      <tr key={v.key} className="py-2 hover:bg-slate-900/40">
+                        <td className="py-1.5 text-slate-300">{v.label}</td>
+                        <td className="py-1.5 text-right font-mono text-[11px] text-slate-400">
+                          {rawTakes.length > 0 ? rawTakes.join(' / ') : '—'}
+                        </td>
+                        <td className="py-1.5 text-right font-mono font-semibold text-white">
+                          {finalVal} {v.unit}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {measurement.notes && (
+            <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-1 text-xs">
+              <span className="font-semibold text-slate-400 block">Notas de la Consulta:</span>
+              <p className="text-slate-300 italic">{measurement.notes}</p>
+            </div>
+          )}
         </div>
       </div>
-
-      {measurement.notes && (
-        <div className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-1 text-xs">
-          <span className="font-semibold text-slate-400 block">Notas de la Consulta:</span>
-          <p className="text-slate-300 italic">{measurement.notes}</p>
-        </div>
-      )}
         </>
       )}
 
